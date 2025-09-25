@@ -77,6 +77,47 @@ Mục tiêu:
 ## 📦 Cài đặt & Chạy thử
 
 ### 1️⃣ Clone repo
-```bash
+
 git clone https://github.com/username/OnlyFan.git
 cd OnlyFan
+
+## 🚀 Triển khai
+
+Bạn có thể triển khai dự án với nhiều nền tảng:
+
+- [Vercel](https://vercel.com)
+- [Netlify](https://www.netlify.com)
+- [Docker Compose](https://docs.docker.com/compose/)
+- AWS EC2 *(coming soon)*
+
+---
+
+## 🛣️ Roadmap
+
+- 🤖 AI gợi ý quạt theo thời tiết  
+- 🕶️ AR/VR thử quạt trong phòng  
+- 📱 Ứng dụng di động (React Native)  
+- 🌸 Quạt tỏa hương & quạt tắm nắng  
+
+---
+
+## 🤝 Đóng góp
+
+1. Fork repo  
+2. Tạo branch mới (`feature/ten-tinh-nang`)  
+3. Commit thay đổi  
+4. Push branch  
+5. Tạo Pull Request  
+
+---
+
+## 📝 License
+
+MIT License © 2025 [Your Name]
+
+---
+
+## ❤️ Fun Fact
+
+**Tại sao gọi là OnlyFan?**  
+👉 Vì chúng tôi chỉ bán **fan (quạt)** – không có gì “mát mẻ” ngoài gió cả 🌬️🤣
