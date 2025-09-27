@@ -23,23 +23,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        UserApi api = ApiClient.getClient().create(UserApi.class);
-
-        api.getUsers().enqueue(new Callback<List<String>>() {
-            @Override
-            public void onResponse(Call<List<String>> call, Response<List<String>> response) {
-                if (response.isSuccessful()) {
-                    Log.d("API_TEST", "Kết nối OK: " + response.body());
-                } else {
-                    Log.e("API_TEST", "Lỗi Response code: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<String>> call, Throwable t) {
-                Log.e("API_TEST", "Kết nối thất bại: " + t.getMessage());
-            }
-        });
     }
 }
 

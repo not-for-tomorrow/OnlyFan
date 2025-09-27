@@ -10,7 +10,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://10.0.2.2:8080/api/"; // Emulator -> Spring Boot localhost
+    private static final String BASE_URL = "http://10.0.2.2:8080/"; // Emulator -> Spring Boot localhost
     private static Retrofit retrofit;
 
     public static Retrofit getClient() {
