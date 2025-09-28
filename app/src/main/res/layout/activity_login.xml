@@ -50,9 +50,9 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:text="LOG IN"
+            android:backgroundTint="@null"
             android:enabled="false"
-            android:background="@drawable/bg_btn_disabled"
-            android:textAllCaps="true"
+            android:background="@drawable/bg_btn_selector"
             android:textColor="@android:color/white"
             android:layout_marginTop="16dp"/>
 

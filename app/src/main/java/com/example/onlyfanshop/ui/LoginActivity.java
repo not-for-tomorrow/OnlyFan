@@ -1,6 +1,8 @@
 package com.example.onlyfanshop.ui;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,9 +39,32 @@ public class LoginActivity extends AppCompatActivity {
         userApi = ApiClient.getClient().create(UserApi.class);
         etUsername = findViewById(R.id.edtUsername);
         etPassword = findViewById(R.id.edtPassword);
-        btnLogin = findViewById(R.id.btnSignInGoogle);
+        btnLogin = findViewById(R.id.btnLogin);
+
+        TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkInputFields();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        };
+
+        etUsername.addTextChangedListener(watcher);
+        etPassword.addTextChangedListener(watcher);
 
         btnLogin.setOnClickListener(v -> login());
+    }
+
+    private void checkInputFields() {
+        String username = etUsername.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+
+        btnLogin.setEnabled(!username.isEmpty() && !password.isEmpty());
     }
 
     private void login() {
