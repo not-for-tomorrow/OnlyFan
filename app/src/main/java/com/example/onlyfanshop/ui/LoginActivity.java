@@ -1,11 +1,13 @@
 package com.example.onlyfanshop.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +31,8 @@ public class LoginActivity extends AppCompatActivity {
     private UserApi userApi;
     private EditText etUsername, etPassword;
     private Button btnLogin;
+
+    private TextView tvForgotPassword, tvSignUp;
     private final Gson gson = new Gson();
 
     @Override
@@ -40,7 +44,13 @@ public class LoginActivity extends AppCompatActivity {
         etUsername = findViewById(R.id.edtUsername);
         etPassword = findViewById(R.id.edtPassword);
         btnLogin = findViewById(R.id.btnLogin);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
+        tvSignUp = findViewById(R.id.tvSignUp);
 
+        tvSignUp.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
         TextWatcher watcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
