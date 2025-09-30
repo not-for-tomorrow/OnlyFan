@@ -15,6 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OnlyFanshop">
         <activity
+            android:name=".CartActivity"
+
             android:name=".ui.ResetPasswordActivity"
             android:exported="false" />
         <activity
@@ -22,6 +24,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.OtpActivity"
+
             android:exported="false" />
         <activity
             android:name=".ui.RegisterActivity"
