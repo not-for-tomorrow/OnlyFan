@@ -2,6 +2,7 @@ package com.example.onlyfanshop.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -12,12 +13,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.onlyfanshop.MainActivity;
 import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.api.ApiClient;
 import com.example.onlyfanshop.api.UserApi;
 import com.example.onlyfanshop.model.ApiResponse;
 import com.example.onlyfanshop.model.LoginRequest;
 import com.example.onlyfanshop.model.UserDTO;
+import com.example.onlyfanshop.ultils.Validation;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -46,14 +49,18 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
         tvSignUp = findViewById(R.id.tvSignUp);
-
+        tvForgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, ForgotActivity.class);
+            startActivity(intent);
+        });
         tvSignUp.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
         TextWatcher watcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -61,7 +68,8 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         };
 
         etUsername.addTextChangedListener(watcher);
@@ -80,9 +88,15 @@ public class LoginActivity extends AppCompatActivity {
     private void login() {
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
-
+        Log.d("LoginActivityLog", "login() called"+username+password);
         if (username.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập username và password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!Validation.isValidEmail(username)) {
+            etUsername.setBackgroundResource(R.drawable.edittext_error);
+            etUsername.setError("Email không hợp lệ");
+            Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -100,6 +114,9 @@ public class LoginActivity extends AppCompatActivity {
                 if (apiResponse != null) {
                     if (apiResponse.getStatusCode() == 200) {
                         UserDTO user = apiResponse.getData();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("user", user);
+                        startActivity(intent);
                         Toast.makeText(LoginActivity.this, "Welcome " + user.getUsername(), Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(LoginActivity.this, apiResponse.getMessage(), Toast.LENGTH_SHORT).show();

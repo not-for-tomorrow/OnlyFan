@@ -2,7 +2,9 @@ package com.example.onlyfanshop.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class UserDTO {
+import java.io.Serializable;
+
+public class UserDTO implements Serializable {
     @SerializedName("userID")
     private Integer userID;
 
