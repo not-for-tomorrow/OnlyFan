@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp"
+    android:background="@android:color/white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Logo -->
+    <ImageView
+        android:src="@drawable/logo_qu_t"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Email hiển thị (readonly) -->
+    <TextView
+        android:id="@+id/tvOtpMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mã OTP đã được gửi tới email:"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:padding="10dp" />
+    <TextView
+        android:id="@+id/tvOtpEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:padding="10dp" />
+
+    <!-- OTP + Verify -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <EditText
+            android:id="@+id/edtOtp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp"
+            android:hint="Nhập OTP"
+            android:inputType="number"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp" />
+
+        <Button
+            android:id="@+id/btnResendOtp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:text="Resend OTP"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Text hiển thị kết quả + countdown -->
+    <TextView
+        android:id="@+id/tvOtpStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mã OTP sẽ hết hạn trong 60 giây"
+        android:textSize="14sp"
+        android:textColor="@android:color/holo_red_dark"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
+    <!-- Gửi lại OTP -->
+    <Button
+        android:id="@+id/btnVerifyOtp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Verify"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:layout_marginTop="16dp" />
+
+    <!-- Nút quay về -->
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Back"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:layout_gravity="start"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="12dp"/>
+
+</LinearLayout>

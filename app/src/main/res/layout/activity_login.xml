@@ -27,7 +27,7 @@
             android:id="@+id/edtUsername"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:hint="Username"
+            android:hint="Email"
             android:inputType="textEmailAddress"
             android:background="@android:drawable/edit_text"
             android:padding="12dp"
