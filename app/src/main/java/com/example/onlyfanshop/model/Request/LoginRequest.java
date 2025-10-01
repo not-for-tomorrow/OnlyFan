@@ -1,4 +1,4 @@
-package com.example.onlyfanshop.model;
+package com.example.onlyfanshop.model.Request;
 
 
 public class LoginRequest {

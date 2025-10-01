@@ -1,4 +1,4 @@
-package com.example.onlyfanshop.model;
+package com.example.onlyfanshop.model.response;
 
 public class ApiResponse<T> {
     private int statusCode;

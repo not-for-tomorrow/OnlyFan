@@ -1,8 +1,7 @@
-package com.example.onlyfanshop.ui;
+package com.example.onlyfanshop.ui.login;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -13,12 +12,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.onlyfanshop.MainActivity;
+import com.example.onlyfanshop.ui.MainActivity;
 import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.api.ApiClient;
 import com.example.onlyfanshop.api.UserApi;
-import com.example.onlyfanshop.model.ApiResponse;
-import com.example.onlyfanshop.model.LoginRequest;
+import com.example.onlyfanshop.model.response.ApiResponse;
+import com.example.onlyfanshop.model.Request.LoginRequest;
 import com.example.onlyfanshop.model.UserDTO;
 import com.example.onlyfanshop.ultils.Validation;
 import com.google.gson.Gson;
