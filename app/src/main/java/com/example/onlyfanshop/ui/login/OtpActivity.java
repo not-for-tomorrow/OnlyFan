@@ -1,4 +1,4 @@
-package com.example.onlyfanshop.ui;
+package com.example.onlyfanshop.ui.login;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,14 +10,11 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.api.ApiClient;
 import com.example.onlyfanshop.api.UserApi;
-import com.example.onlyfanshop.model.ApiResponse;
+import com.example.onlyfanshop.model.response.ApiResponse;
 import com.example.onlyfanshop.model.Request.RegisterRequest;
 import com.google.gson.Gson;
 

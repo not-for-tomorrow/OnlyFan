@@ -15,23 +15,23 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OnlyFanshop">
         <activity
-            android:name=".CartActivity"
+            android:name=".ui.cart.CartActivity"
             android:exported="false"/>
         <activity
-            android:name=".ui.ResetPasswordActivity"
+            android:name=".ui.login.ResetPasswordActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.ForgotActivity"
+            android:name=".ui.login.ForgotActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.OtpActivity"
+            android:name=".ui.login.OtpActivity"
 
             android:exported="false" />
         <activity
-            android:name=".ui.RegisterActivity"
+            android:name=".ui.login.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".ui.login.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,7 +40,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
