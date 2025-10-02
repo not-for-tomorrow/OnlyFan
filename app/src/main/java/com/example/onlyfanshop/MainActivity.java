@@ -1,11 +1,10 @@
-package com.example.onlyfanshop.ui;
+package com.example.onlyfanshop;
 
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.api.ApiClient;
 import com.example.onlyfanshop.api.UserApi;
 import com.example.onlyfanshop.model.UserDTO;
