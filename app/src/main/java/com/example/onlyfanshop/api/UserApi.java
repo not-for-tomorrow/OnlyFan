@@ -1,11 +1,10 @@
 package com.example.onlyfanshop.api;
 
-import com.example.onlyfanshop.model.ApiResponse;
-import com.example.onlyfanshop.model.LoginRequest;
+import com.example.onlyfanshop.model.response.ApiResponse;
+import com.example.onlyfanshop.model.Request.LoginRequest;
 import com.example.onlyfanshop.model.Request.RegisterRequest;
 import com.example.onlyfanshop.model.UserDTO;
 
-import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
