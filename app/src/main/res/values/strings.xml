@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">OnlyFanshop</string>
     <string name="search">Tìm kiếm...</string>
-    <string name="_0">0$</string>
+    <string name="_0">0VND</string>
     <string name="productTotal">Tổng giá trị sản phẩm</string>
     <string name="deliveryCost">Phí vận chuyển</string>
     <string name="total">Tổng thanh toán</string>
