@@ -1,6 +1,24 @@
 package com.example.onlyfanshop.model;
 
-import java.io.Serializable;
+public class BrandDTO {
+    private Long brandID;
+    private String name;
 
-public class BrandDTO implements Serializable {
+    public Long getBrandID() {
+        return brandID;
+    }
+
+    public void setBrandID(Long brandID) {
+        this.brandID = brandID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
+
+
