@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "328191492825",
+    "project_id": "onlyfan-f9406",
+    "storage_bucket": "onlyfan-f9406.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:328191492825:android:e70c33e77d82eaee2374c8",
+        "android_client_info": {
+          "package_name": "com.example.onlyfanshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "328191492825-ksiupls1ohqgis10ieghjp7mbaj8l0vb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.onlyfanshop",
+            "certificate_hash": "a3f212ff97cb969737b14181e232c9b36c5dd478"
+          }
+        },
+        {
+          "client_id": "328191492825-8iket64hs1nr651gn0jnb19js7aimj10.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfHbbhtx804hEb2Q7ydAwmaGrYd7mmwg0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "328191492825-8iket64hs1nr651gn0jnb19js7aimj10.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

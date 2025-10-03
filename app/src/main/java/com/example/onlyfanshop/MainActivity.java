@@ -11,6 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+// Firebase imports for logout
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+
 import com.example.onlyfanshop.api.ApiClient;
 import com.example.onlyfanshop.api.ProductApi;
 import com.example.onlyfanshop.api.UserApi;
@@ -28,14 +34,30 @@ public class MainActivity extends AppCompatActivity {
     private EditText editProductId;
     private Button btnViewProduct;
     private Button btnTestApi;
+    private Button btnLogout;
+    
+    // Firebase Authentication
+    private FirebaseAuth mAuth;
+    private GoogleSignInClient mGoogleSignInClient;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+        initializeGoogleSignIn();
+        
         UserDTO user = (UserDTO) getIntent().getSerializableExtra("user");
         textView = findViewById(R.id.textView);
-        textView.setText("Welcome " + user.getUsername());
+        
+        // Xử lý trường hợp user null
+        if (user != null && user.getUsername() != null) {
+            textView.setText("Welcome " + user.getUsername());
+        } else {
+            textView.setText("Welcome to OnlyFanshop!");
+        }
         userApi = ApiClient.getClient().create(UserApi.class);
         
         editProductId = findViewById(R.id.editProductId);
@@ -50,6 +72,11 @@ public class MainActivity extends AppCompatActivity {
         btnTestApi.setOnClickListener(v -> {
             // Test API only
             testApiOnly();
+        });
+        
+        btnLogout = findViewById(R.id.btnLogout);
+        btnLogout.setOnClickListener(v -> {
+            logout();
         });
     }
 
@@ -171,6 +198,37 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         }).start();
+    }
+    
+    // Initialize Google Sign-In for logout
+    private void initializeGoogleSignIn() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("328191492825-8iket64hs1nr651gn0jnb19js7aimj10.apps.googleusercontent.com")
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+    }
+    
+    // Logout method
+    private void logout() {
+        Log.d("Logout", "Starting logout process");
+        
+        // Sign out from Firebase
+        mAuth.signOut();
+        
+        // Sign out from Google
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Log.d("Logout", "Google sign out completed");
+            
+            // Show logout success message
+            Toast.makeText(MainActivity.this, "Đã đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+            
+            // Navigate back to LoginActivity
+            Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.login.LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 }
 
