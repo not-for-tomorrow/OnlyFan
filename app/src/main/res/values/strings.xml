@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">OnlyFan</string>
+    <string name="splash_title">YOUR\nSTYLE WILL\nTELL ABOUT\nYOU</string>
+    <string name="let_s_get_started">Let\'s Get Started</string>
+    <string name="uilover">UILover</string>
+    <string name="already_have_an_account_signin">Already have an account? <font color="#3DDC84">Sign In</font></string>
+</resources>

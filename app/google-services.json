@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "217178537371",
+    "firebase_url": "https://onlyfan-bbea3-default-rtdb.firebaseio.com",
+    "project_id": "onlyfan-bbea3",
+    "storage_bucket": "onlyfan-bbea3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217178537371:android:541977b4eba267dbb7b53e",
+        "android_client_info": {
+          "package_name": "com.example.onlyfan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFuiup5lUlnbRSm1vfEhtY3p8qAN97Yb8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
