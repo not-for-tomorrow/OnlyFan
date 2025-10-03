@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,7 +27,8 @@ public class RegisterActivity extends AppCompatActivity {
 
     private UserApi userApi;
     private EditText edtUsername, edtPassword, edtEmail, edtPhone, edtAddress, edtConfirmPassword;
-    private Button btnRegister, btnBack;
+    private Button btnRegister;
+    private TextView btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +127,7 @@ public class RegisterActivity extends AppCompatActivity {
                     Intent intent = new Intent(RegisterActivity.this, OtpActivity.class);
                     intent.putExtra("username", username);
                     intent.putExtra("password", password);
+                    intent.putExtra("confirmPassword", confirmPassword);
                     intent.putExtra("email", email);
                     intent.putExtra("phone", phone);
                     intent.putExtra("address", address);

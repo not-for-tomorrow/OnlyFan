@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,7 +24,8 @@ import retrofit2.Response;
 public class ForgotActivity extends AppCompatActivity {
     private UserApi userApi;
     private EditText edtEmail, edtOtp;
-    private Button btnVerifyOtp, btnResendOtp, btnBack;
+    private Button btnVerifyOtp, btnResendOtp;
+    private TextView btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +84,6 @@ public class ForgotActivity extends AppCompatActivity {
         if (email.isEmpty()) {  // check đúng: nếu email trống thì báo lỗi
             edtEmail.setBackgroundResource(R.drawable.edittext_error);
             edtEmail.setError("Vui lòng nhập email");
-            return;
-        }
-        if (!Validation.isValidEmail(email)) {
-            edtEmail.setBackgroundResource(R.drawable.edittext_error);
-            edtEmail.setError("Email không hợp lệ");
-            Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!Validation.isValidEmail(email)) {

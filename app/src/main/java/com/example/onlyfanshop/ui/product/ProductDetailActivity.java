@@ -1,8 +1,12 @@
 package com.example.onlyfanshop.ui.product;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +31,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ImageView imageProduct;
     private TextView textBrand, textProductName, textBottomPrice, textBrief, textFull, textSpecs;
     private MaterialButton btnAddToCart;
+    private ProgressBar progressBar;
     private boolean isFavorite = false;
 
     @Override
@@ -45,6 +50,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         textFull = findViewById(R.id.textFull);
         textSpecs = findViewById(R.id.textSpecs);
         btnAddToCart = findViewById(R.id.btnAddToCart);
+        progressBar = findViewById(R.id.progressBar);
 
         findViewById(R.id.btnFavorite).setOnClickListener(v -> toggleFavorite());
 
@@ -55,31 +61,61 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void fetchDetail(int id) {
+        Log.d("ProductDetail", "Fetching product detail for ID: " + id);
+        showLoading(true);
         ProductApi api = ApiClient.getClient().create(ProductApi.class);
         api.getProductDetail(id).enqueue(new Callback<ApiResponse<ProductDetailDTO>>() {
             @Override
             public void onResponse(Call<ApiResponse<ProductDetailDTO>> call, Response<ApiResponse<ProductDetailDTO>> response) {
+                showLoading(false);
+                Log.d("ProductDetail", "Response code: " + response.code());
+                Log.d("ProductDetail", "Response body: " + response.body());
+                
                 if (response.isSuccessful() && response.body() != null) {
                     ProductDetailDTO d = response.body().getData();
-                    if (d == null) return;
-                    textBrand.setText(d.getBrand() != null ? d.getBrand().getName() : "");
-                    textProductName.setText(d.getProductName());
-                    textBottomPrice.setText(String.format("$%.2f", d.getPrice() != null ? d.getPrice() : 0));
-                    textBrief.setText(d.getBriefDescription());
-                    textFull.setText(d.getFullDescription());
-                    textSpecs.setText(d.getTechnicalSpecifications());
-                    Glide.with(ProductDetailActivity.this)
-                            .load(d.getImageURL())
-                            .placeholder(R.drawable.ic_launcher_foreground)
-                            .into(imageProduct);
+                    Log.d("ProductDetail", "Product data: " + d);
+                    if (d == null) {
+                        Log.e("ProductDetail", "Product data is null");
+                        Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    bindProductData(d);
+                } else {
+                    Log.e("ProductDetail", "Response not successful or body is null");
+                    Toast.makeText(ProductDetailActivity.this, "Failed to load product details", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<ProductDetailDTO>> call, Throwable t) {
-                // Optionally show a toast/snackbar
+                showLoading(false);
+                Log.e("ProductDetail", "Network error: " + t.getMessage(), t);
+                Toast.makeText(ProductDetailActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void bindProductData(ProductDetailDTO product) {
+        textBrand.setText(product.getBrand() != null ? product.getBrand().getName() : "");
+        textProductName.setText(product.getProductName());
+        textBottomPrice.setText(String.format("$%.2f", product.getPrice() != null ? product.getPrice() : 0));
+        textBrief.setText(product.getBriefDescription() != null ? product.getBriefDescription() : "");
+        textFull.setText(product.getFullDescription() != null ? product.getFullDescription() : "");
+        textSpecs.setText(product.getTechnicalSpecifications() != null ? product.getTechnicalSpecifications() : "");
+        
+        if (product.getImageURL() != null && !product.getImageURL().isEmpty()) {
+            Glide.with(ProductDetailActivity.this)
+                    .load(product.getImageURL())
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .error(R.drawable.ic_launcher_foreground)
+                    .into(imageProduct);
+        }
+    }
+
+    private void showLoading(boolean show) {
+        if (progressBar != null) {
+            progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void toggleFavorite() {

@@ -25,7 +25,8 @@ import retrofit2.Response;
 public class OtpActivity extends AppCompatActivity {
     private TextView tvOtpMessage, tvOtpStatus, tvOtpEmail;
     private EditText etOtp;
-    private Button btnVerifyOtp, btnResendOtp, btnBack;
+    private Button btnVerifyOtp, btnResendOtp;
+    private TextView btnBack;
     private UserApi userApi;
 
 
@@ -108,10 +109,11 @@ public class OtpActivity extends AppCompatActivity {
         Log.d("RegisterActivityLog", "register() called");
         String username = getIntent().getStringExtra("username");
         String password = getIntent().getStringExtra("password");
+        String confirmPassword = getIntent().getStringExtra("confirmPassword");
         String email = getIntent().getStringExtra("email");
         String phone = getIntent().getStringExtra("phone");
         String address = getIntent().getStringExtra("address");
-        RegisterRequest request = new RegisterRequest(username, password, email, phone, address);
+        RegisterRequest request = new RegisterRequest(username, password, confirmPassword, email, phone, address);
         userApi.register(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {

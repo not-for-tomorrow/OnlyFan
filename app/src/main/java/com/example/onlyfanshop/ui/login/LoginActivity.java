@@ -92,12 +92,7 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng nhập username và password", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (!Validation.isValidEmail(username)) {
-            etUsername.setBackgroundResource(R.drawable.edittext_error);
-            etUsername.setError("Email không hợp lệ");
-            Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Note: Username can be either username or email, so we don't validate email format here
 
         LoginRequest request = new LoginRequest(username, password);
 
