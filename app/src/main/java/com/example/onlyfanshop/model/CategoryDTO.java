@@ -1,25 +1,26 @@
 package com.example.onlyfanshop.model;
 
 public class CategoryDTO {
-    private Integer id;
-    private String name;
+    private Integer categoryID;
+    private String categoryName;
 
-    public Integer getId() {
-        return id;
+    public Integer getCategoryID() {
+        return categoryID;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setCategoryID(Integer categoryID) {
+        this.categoryID = categoryID;
     }
 
-    public String getName() {
-        return name;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }
+
 
 
 

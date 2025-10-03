@@ -15,6 +15,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -139,6 +146,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="14dp"
+            android:layout_marginBottom="0dp"
             android:gravity="center_vertical">
 
             <TextView
@@ -170,6 +178,7 @@
         app:contentInsetStartWithNavigation="0dp"
         app:layout_anchor="@+id/appBarLayout"
         app:layout_anchorGravity="center"
+        android:layout_marginTop="25dp"
         app:navigationIconTint="@android:color/black">
 
         <ImageButton
