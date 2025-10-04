@@ -42,4 +42,35 @@ public interface UserApi {
             @Field("email") String email,
             @Field("newPassword") String newPassword
     );
+    
+    // Google login endpoint
+    @POST("api/auth/google/login")
+    Call<ApiResponse<UserDTO>> googleLogin(@Body GoogleLoginRequest request);
+    
+    // Inner class for Google login request
+    class GoogleLoginRequest {
+        private String email;
+        private String username;
+        
+        public GoogleLoginRequest(String email, String username) {
+            this.email = email;
+            this.username = username;
+        }
+        
+        public String getEmail() {
+            return email;
+        }
+        
+        public void setEmail(String email) {
+            this.email = email;
+        }
+        
+        public String getUsername() {
+            return username;
+        }
+        
+        public void setUsername(String username) {
+            this.username = username;
+        }
+    }
 }

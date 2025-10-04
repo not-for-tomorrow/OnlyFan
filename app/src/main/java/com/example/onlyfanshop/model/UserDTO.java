@@ -23,6 +23,9 @@ public class UserDTO implements Serializable {
     @SerializedName("role")
     private String role;
 
+    @SerializedName("authProvider")
+    private String authProvider;
+
     // getters & setters
     public Integer getUserID() { return userID; }
     public void setUserID(Integer userID) { this.userID = userID; }
@@ -36,4 +39,6 @@ public class UserDTO implements Serializable {
     public void setAddress(String address) { this.address = address; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    public String getAuthProvider() { return authProvider; }
+    public void setAuthProvider(String authProvider) { this.authProvider = authProvider; }
 }

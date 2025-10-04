@@ -39,3 +39,5 @@ public class ProductDetailDTO {
     public void setCategory(CategoryDTO category) { this.category = category; }
 }
 
+
+
