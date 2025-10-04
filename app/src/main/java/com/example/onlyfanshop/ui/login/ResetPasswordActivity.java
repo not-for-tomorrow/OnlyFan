@@ -28,7 +28,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_reset_password);
-        userApi = ApiClient.getClient().create(UserApi.class);
+        userApi = ApiClient.getPublicClient().create(UserApi.class);
         String email = getIntent().getStringExtra("email");
         edtNewPassword = findViewById(R.id.edtNewPassword);
         edtConfirmPassword = findViewById(R.id.edtConfirmPassword);

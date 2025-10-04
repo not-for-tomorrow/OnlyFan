@@ -1,6 +1,7 @@
 package com.example.onlyfanshop;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             textView.setText("Welcome to OnlyFanshop!");
         }
-        userApi = ApiClient.getClient().create(UserApi.class);
+        userApi = ApiClient.getPublicClient().create(UserApi.class);
         
         editProductId = findViewById(R.id.editProductId);
         
@@ -98,10 +99,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void testApiConnection() {
         Log.d("MainActivity", "Testing API connection...");
-        Log.d("MainActivity", "Base URL: " + ApiClient.getClient().baseUrl());
+        Log.d("MainActivity", "Base URL: " + ApiClient.getPublicClient().baseUrl());
         
-        ProductApi api = ApiClient.getClient().create(ProductApi.class);
-
+        ProductApi api = ApiClient.getPublicClient().create(ProductApi.class);
+        
+        // First test basic connectivity
         Call<ApiResponse<String>> testCall = api.testConnection();
         testCall.enqueue(new Callback<ApiResponse<String>>() {
             @Override
@@ -199,22 +201,87 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
-
+    
+    // Logout method
+//    private void logout() {
+//        Log.d("Logout", "Starting logout process");
+//
+//        // Sign out from Firebase
+//        mAuth.signOut();
+//        SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+//        String token = prefs.getString("jwt_token", null);
+//        // Sign out from Google
+//        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+//            Log.d("Logout", "Google sign out completed");
+//
+//            // Show logout success message
+//            Toast.makeText(MainActivity.this, "Đã đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+//            // Navigate back to LoginActivity
+//            Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.login.LoginActivity.class);
+//            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//            startActivity(intent);
+//            finish();
+//        });
+//    }
     private void logout() {
         Log.d("Logout", "Starting logout process");
 
-        mAuth.signOut();
+        // Lấy token từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        String token = prefs.getString("jwt_token", null);
 
-        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-            Log.d("Logout", "Google sign out completed");
+        if (token == null) {
+            Log.w("Logout", "Không có token để logout, chuyển về LoginActivity");
+            navigateToLogin();
+            return;
+        }
 
-            Toast.makeText(MainActivity.this, "Đã đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+        // Gọi API logout
+        UserApi apiService = ApiClient.getPrivateClient(this).create(UserApi.class);
+        Call<ApiResponse<Void>> call = apiService.logout();
 
-            Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.login.LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+        call.enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    Log.d("Logout", "Logout thành công từ server");
+                } else {
+                    Log.w("Logout", "Server trả về lỗi: " + response.code());
+                }
+
+                completeLogout();
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                Log.e("Logout", "Lỗi khi gọi API logout", t);
+                completeLogout();
+            }
         });
     }
+    private void completeLogout() {
+        Log.d("Logout", "Hoàn tất đăng xuất cục bộ");
+
+        // Xóa token khỏi SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        prefs.edit().remove("jwt_token").apply();
+
+        // Đăng xuất Firebase
+        mAuth.signOut();
+
+        // Đăng xuất Google
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Log.d("Logout", "Google sign out completed");
+            Toast.makeText(MainActivity.this, "Đã đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+            navigateToLogin();
+        });
+    }
+    private void navigateToLogin() {
+        Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.login.LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
 }
 
