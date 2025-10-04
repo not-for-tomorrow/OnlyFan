@@ -5,20 +5,15 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-// Animation imports removed since logo is now static
-// import android.view.animation.Animation;
-// import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// Activity Result API imports
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.onlyfanshop.MainActivity;
@@ -28,20 +23,15 @@ import com.example.onlyfanshop.api.UserApi;
 import com.example.onlyfanshop.model.response.ApiResponse;
 import com.example.onlyfanshop.model.Request.LoginRequest;
 import com.example.onlyfanshop.model.UserDTO;
-import com.example.onlyfanshop.ultils.Validation;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-// Firebase imports
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.FacebookAuthProvider;
-import com.google.firebase.auth.OAuthProvider;
 
-// Google Sign-In imports
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -49,7 +39,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-// Facebook Login imports
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -68,19 +57,12 @@ public class LoginActivity extends AppCompatActivity {
     private EditText etUsername, etPassword;
     private Button btnLogin, btnLoginGoogle, btnLoginFacebook;
     private ImageView logoFan;
-
     private TextView tvForgotPassword, tvSignUp;
     private final Gson gson = new Gson();
-    
-    // Firebase Authentication
     private FirebaseAuth mAuth;
-    
-    // Google Sign-In
     private GoogleSignInClient mGoogleSignInClient;
     private static final int RC_GOOGLE_SIGN_IN = 9001;
     private ActivityResultLauncher<Intent> googleSignInLauncher;
-    
-    // Facebook Login
     private CallbackManager mCallbackManager;
     private ActivityResultLauncher<Intent> facebookLoginLauncher;
 
@@ -89,19 +71,14 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
-        
-        // Initialize Google Sign-In
+
         initializeGoogleSignIn();
-        
-        // Initialize Facebook Login
+
         initializeFacebookLogin();
-        
-        // Initialize Activity Result Launcher for Google Sign-In
+
         initializeGoogleSignInLauncher();
-        
-        // Initialize Activity Result Launcher for Facebook Login
+
         initializeFacebookLoginLauncher();
 
         userApi = ApiClient.getClient().create(UserApi.class);
@@ -114,9 +91,6 @@ public class LoginActivity extends AppCompatActivity {
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
         tvSignUp = findViewById(R.id.tvSignUp);
         
-        // Logo is now fixed (no rotation)
-        // startFanAnimation(); // Commented out to keep logo static
-        
         tvForgotPassword.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, ForgotActivity.class);
             startActivity(intent);
@@ -125,8 +99,7 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
-        
-        // Set click listeners for social login buttons
+
         btnLoginGoogle.setOnClickListener(v -> signInWithGoogle());
         btnLoginFacebook.setOnClickListener(v -> signInWithFacebook());
         
@@ -166,7 +139,6 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng nhập username và password", Toast.LENGTH_SHORT).show();
             return;
         }
-        // Note: Username can be either username or email, so we don't validate email format here
 
         LoginRequest request = new LoginRequest(username, password);
 
@@ -212,11 +184,8 @@ public class LoginActivity extends AppCompatActivity {
             return null;
         }
     }
-    
-    // Initialize Google Sign-In
+
     private void initializeGoogleSignIn() {
-        // Sử dụng client ID từ google-services.json
-        // Lấy client ID từ Firebase Console > Project Settings > General > Web API Key
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("328191492825-8iket64hs1nr651gn0jnb19js7aimj10.apps.googleusercontent.com") // Web client ID từ Firebase Console
                 .requestEmail()
@@ -225,8 +194,7 @@ public class LoginActivity extends AppCompatActivity {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Log.d("GoogleSignIn", "Google Sign-In initialized with client ID: 328191492825-8iket64hs1nr651gn0jnb19js7aimj10.apps.googleusercontent.com");
     }
-    
-    // Initialize Facebook Login
+
     private void initializeFacebookLogin() {
         mCallbackManager = CallbackManager.Factory.create();
         LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
@@ -249,8 +217,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-    
-    // Initialize Google Sign-In Launcher
+
     private void initializeGoogleSignInLauncher() {
         googleSignInLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -285,16 +252,13 @@ public class LoginActivity extends AppCompatActivity {
             }
         );
     }
-    
-    // Google Sign-In method
+
     private void signInWithGoogle() {
         Log.d("GoogleSignIn", "Starting Google Sign-In process");
         try {
-            // Đảm bảo sign out trước để hiển thị account picker
             mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
                 Log.d("GoogleSignIn", "Signed out from previous session");
-                
-                // Sau khi sign out, launch sign in intent
+
                 Intent signInIntent = mGoogleSignInClient.getSignInIntent();
                 if (signInIntent != null) {
                     Log.d("GoogleSignIn", "Launching Google Sign-In intent with account picker");
@@ -309,8 +273,7 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Lỗi Google Sign-In: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-    
-    // Initialize Facebook Login Launcher
+
     private void initializeFacebookLoginLauncher() {
         facebookLoginLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -321,8 +284,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         );
     }
-    
-    // Facebook Sign-In method
+
     private void signInWithFacebook() {
         // Use the new approach with proper error handling
         LoginManager.getInstance().logInWithReadPermissions(
@@ -330,16 +292,14 @@ public class LoginActivity extends AppCompatActivity {
             java.util.Arrays.asList("email", "public_profile")
         );
     }
-    
-    // Handle Facebook login result (Google Sign-In now uses Activity Result API)
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // Only handle Facebook login result
         mCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
-    
-    // Firebase authentication with Google
+
     private void firebaseAuthWithGoogle(String idToken) {
         if (idToken == null || idToken.isEmpty()) {
             Log.e("GoogleAuth", "ID token is null or empty");
@@ -353,6 +313,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Log.d("GoogleAuth", "Firebase authentication with Google successful");
                     FirebaseUser user = mAuth.getCurrentUser();
+                    Log.d("GoogleAuth", "About to call handleSuccessfulLogin");
                     handleSuccessfulLogin(user);
                 } else {
                     Log.e("GoogleAuth", "Firebase authentication with Google failed: " + task.getException().getMessage());
@@ -360,8 +321,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
     }
-    
-    // Handle Facebook access token
+
     private void handleFacebookAccessToken(AccessToken token) {
         if (token == null || token.getToken() == null || token.getToken().isEmpty()) {
             Log.e("FacebookAuth", "Facebook access token is null or empty");
@@ -382,52 +342,101 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
     }
-    
-    // Handle successful login
+
     private void handleSuccessfulLogin(FirebaseUser user) {
+        Log.d("GoogleAuth", "handleSuccessfulLogin called");
         if (user != null) {
-            Toast.makeText(this, "Welcome " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+            Log.d("GoogleAuth", "Processing successful login for user: " + user.getEmail());
+            Log.d("GoogleAuth", "Firebase User - Username: " + user.getDisplayName());
+            Log.d("GoogleAuth", "Firebase User - Email: " + user.getEmail());
+            Log.d("GoogleAuth", "Firebase User - UID: " + user.getUid());
+
+            callGoogleLoginApi(user.getEmail(), user.getDisplayName());
+        } else {
+            Log.e("GoogleAuth", "FirebaseUser is null in handleSuccessfulLogin");
+        }
+    }
+    
+    // Call Google login API to save user data to backend
+    private void callGoogleLoginApi(String email, String username) {
+        Log.d("GoogleAuth", "Calling Google login API for: " + email);
+        Log.d("GoogleAuth", "Username: " + username);
+        Log.d("GoogleAuth", "Email: " + email);
+        
+        UserApi.GoogleLoginRequest request = new UserApi.GoogleLoginRequest(email, username);
+        
+        userApi.googleLogin(request).enqueue(new Callback<ApiResponse<UserDTO>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<UserDTO>> call, Response<ApiResponse<UserDTO>> response) {
+                Log.d("GoogleAuth", "Response code: " + response.code());
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<UserDTO> apiResponse = response.body();
+                    Log.d("GoogleAuth", "API Response status: " + apiResponse.getStatusCode());
+                    Log.d("GoogleAuth", "API Response message: " + apiResponse.getMessage());
+                    
+                    if (apiResponse.getStatusCode() == 200) {
+                        Log.d("GoogleAuth", "Google login API successful");
+                        UserDTO userDTO = apiResponse.getData();
+                        
+                        // Log user information from backend
+                        Log.d("GoogleAuth", "Backend User - Username: " + userDTO.getUsername());
+                        Log.d("GoogleAuth", "Backend User - Email: " + userDTO.getEmail());
+                        Log.d("GoogleAuth", "Backend User - Role: " + userDTO.getRole());
+                        Log.d("GoogleAuth", "Backend User - AuthProvider: " + userDTO.getAuthProvider());
+                        
+                        Toast.makeText(LoginActivity.this, "Welcome " + userDTO.getUsername(), Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("user", userDTO);
+                        startActivity(intent);
+                        finish();
+                    } else if (apiResponse.getStatusCode() == 400) {
+                        // Email conflict - hiển thị Toast
+                        Log.e("GoogleAuth", "Email conflict: " + apiResponse.getMessage());
+                        Toast.makeText(LoginActivity.this, "Email đã tồn tại. Vui lòng sử dụng phương thức đăng nhập khác.", Toast.LENGTH_LONG).show();
+                    } else {
+                        Log.e("GoogleAuth", "Google login API failed: " + apiResponse.getMessage());
+                        showErrorDialog("Lỗi đăng nhập", apiResponse.getMessage());
+                    }
+                } else {
+                    Log.e("GoogleAuth", "Google login API response failed: " + response.code());
+                    String errorMessage = "Không thể kết nối đến server";
+                    if (response.code() == 400) {
+                        // Email conflict - hiển thị Toast
+                        errorMessage = "Email đã tồn tại. Vui lòng sử dụng phương thức đăng nhập khác.";
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                    } else if (response.code() == 500) {
+                        errorMessage = "Lỗi server. Vui lòng thử lại sau.";
+                        showErrorDialog("Lỗi kết nối", errorMessage);
+                    } else if (response.code() == 404) {
+                        errorMessage = "Không tìm thấy dịch vụ. Vui lòng kiểm tra kết nối.";
+                        showErrorDialog("Lỗi kết nối", errorMessage);
+                    } else {
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
             
-            // Tạo UserDTO từ Firebase user
-            UserDTO userDTO = new UserDTO();
-            userDTO.setUsername(user.getDisplayName());
-            userDTO.setEmail(user.getEmail());
-            
-            // Chuyển đến MainActivity với thông tin user
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            intent.putExtra("user", userDTO);
-            startActivity(intent);
-            finish();
-        }
+            @Override
+            public void onFailure(Call<ApiResponse<UserDTO>> call, Throwable t) {
+                Log.e("GoogleAuth", "Google login API call failed: " + t.getMessage());
+                showErrorDialog("Lỗi kết nối", "Không thể kết nối đến server. Vui lòng kiểm tra kết nối internet và thử lại.");
+            }
+        });
     }
-    
-    // Logo is now fixed (no rotation animation)
-    // Animation methods are commented out to keep logo static
-    
-    /*
-    // Start fan rotation animation
-    private void startFanAnimation() {
-        if (logoFan != null) {
-            Animation rotateAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_fan_slow);
-            logoFan.startAnimation(rotateAnimation);
-            Log.d("FanAnimation", "Fan rotation animation started");
-        }
+
+    private void showErrorDialog(String title, String message) {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("⚠️ " + title)
+                .setMessage(message)
+                .setPositiveButton("Đóng", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Thử lại", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setCancelable(false)
+                .show();
     }
-    
-    // Stop fan rotation animation
-    private void stopFanAnimation() {
-        if (logoFan != null) {
-            logoFan.clearAnimation();
-            Log.d("FanAnimation", "Fan rotation animation stopped");
-        }
-    }
-    
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Stop animation when activity is destroyed
-        stopFanAnimation();
-    }
-    */
-    
 }

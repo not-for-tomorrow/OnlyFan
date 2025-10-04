@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-// Firebase imports for logout
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -35,8 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnViewProduct;
     private Button btnTestApi;
     private Button btnLogout;
-    
-    // Firebase Authentication
+
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     
@@ -44,15 +42,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        // Initialize Firebase Auth
+
         mAuth = FirebaseAuth.getInstance();
         initializeGoogleSignIn();
         
         UserDTO user = (UserDTO) getIntent().getSerializableExtra("user");
         textView = findViewById(R.id.textView);
-        
-        // Xử lý trường hợp user null
+
         if (user != null && user.getUsername() != null) {
             textView.setText("Welcome " + user.getUsername());
         } else {
@@ -64,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
         
         btnViewProduct = findViewById(R.id.btnViewProduct);
         btnViewProduct.setOnClickListener(v -> {
-            // Get product ID from input and open product detail
             openProductDetail();
         });
 
@@ -106,8 +101,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "Base URL: " + ApiClient.getClient().baseUrl());
         
         ProductApi api = ApiClient.getClient().create(ProductApi.class);
-        
-        // First test basic connectivity
+
         Call<ApiResponse<String>> testCall = api.testConnection();
         testCall.enqueue(new Callback<ApiResponse<String>>() {
             @Override
@@ -119,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     String message = response.body().getData();
                     Toast.makeText(MainActivity.this, "API Connected: " + message, Toast.LENGTH_SHORT).show();
-                    // Now open product detail
                     Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
                     intent.putExtra(ProductDetailActivity.EXTRA_PRODUCT_ID, 1);
                     startActivity(intent);
@@ -145,8 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void testApiOnly() {
         Log.d("MainActivity", "Testing API only...");
-        
-        // Test with raw HTTP first
+
         testRawHttp();
     }
 
@@ -199,8 +191,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
     }
-    
-    // Initialize Google Sign-In for logout
+
     private void initializeGoogleSignIn() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("328191492825-8iket64hs1nr651gn0jnb19js7aimj10.apps.googleusercontent.com")
@@ -208,22 +199,17 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
-    
-    // Logout method
+
     private void logout() {
         Log.d("Logout", "Starting logout process");
-        
-        // Sign out from Firebase
+
         mAuth.signOut();
-        
-        // Sign out from Google
+
         mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
             Log.d("Logout", "Google sign out completed");
-            
-            // Show logout success message
+
             Toast.makeText(MainActivity.this, "Đã đăng xuất thành công!", Toast.LENGTH_SHORT).show();
-            
-            // Navigate back to LoginActivity
+
             Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.login.LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
