@@ -25,6 +25,11 @@ public class UserDTO implements Serializable {
 
     @SerializedName("authProvider")
     private String authProvider;
+    @SerializedName("token")
+    private String token;
+
+    public String getToken() { return token; }
+
 
     // getters & setters
     public Integer getUserID() { return userID; }

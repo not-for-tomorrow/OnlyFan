@@ -73,4 +73,6 @@ public interface UserApi {
             this.username = username;
         }
     }
+    @POST("users/logout")
+    Call<ApiResponse<Void>> logout();
 }

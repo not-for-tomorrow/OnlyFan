@@ -63,7 +63,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void fetchDetail(int id) {
         Log.d("ProductDetail", "Fetching product detail for ID: " + id);
         showLoading(true);
-        ProductApi api = ApiClient.getClient().create(ProductApi.class);
+        ProductApi api = ApiClient.getPublicClient().create(ProductApi.class);
         api.getProductDetail(id).enqueue(new Callback<ApiResponse<ProductDetailDTO>>() {
             @Override
             public void onResponse(Call<ApiResponse<ProductDetailDTO>> call, Response<ApiResponse<ProductDetailDTO>> response) {

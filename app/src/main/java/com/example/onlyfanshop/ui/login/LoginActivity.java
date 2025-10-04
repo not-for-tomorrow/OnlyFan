@@ -1,6 +1,7 @@
 package com.example.onlyfanshop.ui.login;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -81,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
 
         initializeFacebookLoginLauncher();
 
-        userApi = ApiClient.getClient().create(UserApi.class);
+        userApi = ApiClient.getPublicClient().create(UserApi.class);
         etUsername = findViewById(R.id.edtUsername);
         etPassword = findViewById(R.id.edtPassword);
         btnLogin = findViewById(R.id.btnLogin);
@@ -154,6 +155,13 @@ public class LoginActivity extends AppCompatActivity {
                 if (apiResponse != null) {
                     if (apiResponse.getStatusCode() == 200) {
                         UserDTO user = apiResponse.getData();
+                        String token = user.getToken();
+                        Log.d("LoginActivityLog", "Token: " + token);
+
+                        // Lưu token vào SharedPreferences
+                        //)
+                        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                        sharedPreferences.edit().putString("jwt_token", token).apply();
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("user", user);
                         startActivity(intent);

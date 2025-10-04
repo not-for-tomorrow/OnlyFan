@@ -32,7 +32,7 @@ public class ForgotActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_forgot);
-        userApi = ApiClient.getClient().create(UserApi.class);
+        userApi = ApiClient.getPublicClient().create(UserApi.class);
         edtEmail = findViewById(R.id.edtEmail);
         edtOtp = findViewById(R.id.edtOtp);
         btnVerifyOtp = findViewById(R.id.btnVerifyOtp);
