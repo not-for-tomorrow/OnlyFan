@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.onlyfanshop" />
-                  <option name="mobileSdkAppId" value="1:123456789:android:abcdef123456" />
-                  <option name="projectId" value="onlyfanshop-demo" />
-                  <option name="projectNumber" value="123456789" />
+                  <option name="mobileSdkAppId" value="1:328191492825:android:e70c33e77d82eaee2374c8" />
+                  <option name="projectId" value="onlyfan-f9406" />
+                  <option name="projectNumber" value="328191492825" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

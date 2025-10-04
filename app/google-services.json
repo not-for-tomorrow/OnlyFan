@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "328191492825-hbp7ilbttvlceuhu9m47env7b542bs5m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.onlyfanshop",
+            "certificate_hash": "9d1a0fd119056edca71f2d2b36c61a78c3e2cf04"
+          }
+        },
+        {
           "client_id": "328191492825-ksiupls1ohqgis10ieghjp7mbaj8l0vb.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
