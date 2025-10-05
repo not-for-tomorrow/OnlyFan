@@ -1,50 +1,40 @@
 package com.example.onlyfan.Activity;
 
+import com.example.onlyfan.ui.CategoryFragment;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.viewpager2.widget.CompositePageTransformer;
-import androidx.viewpager2.widget.MarginPageTransformer;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.fragment.app.Fragment;
 
-import com.example.onlyfan.Adapter.BannerAdapter;
-import com.example.onlyfan.Adapter.CategoryAdapter;
-import com.example.onlyfan.Adapter.PopularAdapter;
-import com.example.onlyfan.Domain.BannerModel;
 import com.example.onlyfan.R;
-import com.example.onlyfan.ViewModel.MainViewModel;
-import com.example.onlyfan.databinding.ActivityMainBinding;
+import com.example.onlyfan.ui.HomeFragment;
+import com.example.onlyfan.ui.ProfileFragment;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.ArrayList;
+import com.ismaeldivita.chipnavigation.ChipNavigationBar;
 
 public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding binding;
-    private MainViewModel viewModel;
 
-    private Handler sliderHandler = new Handler();
-    private Runnable sliderRunnable = new Runnable() {
-        @Override
-        public void run() {
-            int currentItem = binding.viewPagerBanner.getCurrentItem();
-            binding.viewPagerBanner.setCurrentItem(currentItem + 1);
-        }
-    };
+    private ChipNavigationBar bottomNav;
+    private MaterialToolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        setContentView(R.layout.activity_main);
 
-        viewModel = new MainViewModel();
+        bottomNav = findViewById(R.id.bottomNav);
 
+        initFirebaseTest();
+        initNavigation(savedInstanceState);
+        initSearchActions();
+    }
+
+    private void initFirebaseTest() {
         FirebaseDatabase.getInstance().getReference("test_connection")
                 .setValue("Hello Firebase!")
                 .addOnCompleteListener(task -> {
@@ -54,75 +44,40 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("FIREBASE", "❌ Lỗi kết nối Firebase", task.getException());
                     }
                 });
-
-        initCategory();
-        initBanner();
-        initPopular();
     }
 
-    private void initPopular() {
-        binding.progressBarPopular.setVisibility(View.VISIBLE);
-        viewModel.loadPopular().observe(this, itemsModels -> {
-            if (!itemsModels.isEmpty()) {
-                binding.popularView.setLayoutManager(new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false));
-                binding.popularView.setAdapter(new PopularAdapter(itemsModels));
-                binding.popularView.setNestedScrollingEnabled(true);
+    private void initNavigation(Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            bottomNav.setItemSelected(R.id.nav_home, true);
+            loadFragment(new HomeFragment());
+        }
+
+        bottomNav.setOnItemSelectedListener(id -> {
+            Fragment fragment;
+            if (id == R.id.nav_home) {
+                fragment = new HomeFragment();
+            } else if (id == R.id.nav_category) {
+                fragment = new CategoryFragment();
+            } else if (id == R.id.nav_fav) {
+                fragment = PlaceholderFragment.newInstance("Favorites");
+            } else if (id == R.id.nav_profile) {
+                fragment = new ProfileFragment();
+            } else {
+                fragment = new HomeFragment();
             }
-            binding.progressBarPopular.setVisibility(View.GONE);
-        });
-        viewModel.loadPopular();
-    }
-
-    private void initCategory() {
-        binding.progressBarCategory.setVisibility(View.VISIBLE);
-        viewModel.loadCategories().observe(this, categoryModels -> {
-            binding.categoryView.setLayoutManager(new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false));
-            binding.categoryView.setAdapter(new CategoryAdapter(categoryModels));
-            binding.categoryView.setNestedScrollingEnabled(true);
-            binding.progressBarCategory.setVisibility(View.GONE);
+            loadFragment(fragment);
         });
     }
 
-    private void banner(ArrayList<BannerModel> bannerModels) {
-        binding.viewPagerBanner.setAdapter(new BannerAdapter(bannerModels, binding.viewPagerBanner));
-        binding.viewPagerBanner.setClipToPadding(false);
-        binding.viewPagerBanner.setClipChildren(false);
-        binding.viewPagerBanner.setOffscreenPageLimit(3);
-        binding.viewPagerBanner.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
-
-        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-        compositePageTransformer.addTransformer(new MarginPageTransformer(40));
-        binding.viewPagerBanner.setPageTransformer(compositePageTransformer);
-
-        binding.viewPagerBanner.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                sliderHandler.removeCallbacks(sliderRunnable);
-                sliderHandler.postDelayed(sliderRunnable, 3000); // 3 giây tự động lướt
-            }
-        });
+    private void initSearchActions() {
+        // Bạn có thể gắn sự kiện search ở đây nếu muốn chuyển vào HomeFragment thông qua interface
     }
 
-    private void initBanner() {
-        binding.progressBarBanner.setVisibility(View.VISIBLE);
-        viewModel.loadBanner().observe(this, bannerModels -> {
-            if (bannerModels != null && !bannerModels.isEmpty()) {
-                banner(bannerModels);
-            }
-            binding.progressBarBanner.setVisibility(View.GONE);
-        });
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        sliderHandler.removeCallbacks(sliderRunnable);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        sliderHandler.postDelayed(sliderRunnable, 3000);
+    private void loadFragment(@NonNull Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.mainFragmentContainer, fragment)
+                .commit();
     }
 }

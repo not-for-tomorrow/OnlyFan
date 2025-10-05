@@ -1,0 +1,8 @@
+<resources>
+    <!-- Các style khác của bạn giữ nguyên -->
+    <style name="ChipNavTextAppearance" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+</resources>

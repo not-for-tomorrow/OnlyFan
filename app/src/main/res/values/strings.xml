@@ -4,4 +4,8 @@
     <string name="let_s_get_started">Let\'s Get Started</string>
     <string name="uilover">UILover</string>
     <string name="already_have_an_account_signin">Already have an account? <font color="#3DDC84">Sign In</font></string>
+    <string name="t_i_kho_n">Tài khoản</string>
+    <string name="y_u_th_ch">Yêu thích</string>
+    <string name="danh_m_c">Danh mục</string>
+    <string name="home">Home</string>
 </resources>
