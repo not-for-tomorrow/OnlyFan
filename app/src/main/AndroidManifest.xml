@@ -21,6 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OnlyFanshop">
         <activity
+            android:name=".ui.payment.PaymentResultActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.payment.PaymentWebViewActivity"
             android:exported="false" />
         <activity

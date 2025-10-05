@@ -1,5 +1,6 @@
 package com.example.onlyfanshop.ui.product;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +20,7 @@ import com.example.onlyfanshop.api.ProductApi;
 import com.example.onlyfanshop.model.PaymentDTO;
 import com.example.onlyfanshop.model.ProductDetailDTO;
 import com.example.onlyfanshop.model.response.ApiResponse;
+import com.example.onlyfanshop.ui.payment.PaymentWebViewActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 
@@ -77,7 +79,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
 
         // Mã ngân hàng để test, bạn có thể thay đổi hoặc cho người dùng chọn
-        String bankCode = "VNBANK";
+        String bankCode = "NCB";
 
         Log.d("Payment", "Creating payment with amount: " + amount + " and bankCode: " + bankCode);
         showLoading(true);
@@ -92,7 +94,9 @@ public class ProductDetailActivity extends AppCompatActivity {
                     String paymentUrl = response.body().getData().getPaymentUrl(); // Giả sử response có trường 'url'
                     Log.d("Payment", "Payment URL: " + paymentUrl);
                     Toast.makeText(ProductDetailActivity.this, "Redirecting to payment...", Toast.LENGTH_SHORT).show();
-
+                    Intent intent = new Intent(ProductDetailActivity.this, PaymentWebViewActivity.class);
+                    intent.putExtra(PaymentWebViewActivity.EXTRA_URL, paymentUrl);
+                    startActivity(intent);
                     // Mở URL thanh toán bằng trình duyệt
                     // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
                     // startActivity(browserIntent);
@@ -128,6 +132,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     ProductDetailDTO d = response.body().getData();
                     Log.d("ProductDetail", "Product data: " + d);
                     if (d == null) {
+
                         Log.e("ProductDetail", "Product data is null");
                         Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
                         return;
