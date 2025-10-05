@@ -14,7 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.api.ApiClient;
+import com.example.onlyfanshop.api.PaymentApi;
 import com.example.onlyfanshop.api.ProductApi;
+import com.example.onlyfanshop.model.PaymentDTO;
 import com.example.onlyfanshop.model.ProductDetailDTO;
 import com.example.onlyfanshop.model.response.ApiResponse;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -52,6 +54,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnAddToCart = findViewById(R.id.btnAddToCart);
         progressBar = findViewById(R.id.progressBar);
 
+        btnAddToCart.setOnClickListener(v -> testPayment());
+
         findViewById(R.id.btnFavorite).setOnClickListener(v -> toggleFavorite());
 
         int id = getIntent().getIntExtra(EXTRA_PRODUCT_ID, -1);
@@ -60,10 +64,59 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void testPayment() {
+        // Giả sử bạn lấy giá từ TextView hoặc một biến thành viên đã lưu giá sản phẩm
+        // Ví dụ: lấy giá từ textBottomPrice
+        String priceString = textBottomPrice.getText().toString().replace("$", "");
+        double amount;
+        try {
+            amount = Double.parseDouble(priceString);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid product price", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Mã ngân hàng để test, bạn có thể thay đổi hoặc cho người dùng chọn
+        String bankCode = "VNBANK";
+
+        Log.d("Payment", "Creating payment with amount: " + amount + " and bankCode: " + bankCode);
+        showLoading(true);
+
+        PaymentApi api = ApiClient.getPrivateClient(this).create(PaymentApi.class);
+        api.createPayment(amount, bankCode).enqueue(new Callback<ApiResponse<PaymentDTO>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<PaymentDTO>> call, Response<ApiResponse<PaymentDTO>> response) {
+                showLoading(false);
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    // Xử lý khi gọi API thành công, ví dụ: mở URL thanh toán
+                    String paymentUrl = response.body().getData().getPaymentUrl(); // Giả sử response có trường 'url'
+                    Log.d("Payment", "Payment URL: " + paymentUrl);
+                    Toast.makeText(ProductDetailActivity.this, "Redirecting to payment...", Toast.LENGTH_SHORT).show();
+
+                    // Mở URL thanh toán bằng trình duyệt
+                    // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
+                    // startActivity(browserIntent);
+                } else {
+                    // Xử lý khi có lỗi từ server
+                    Log.e("Payment", "API call failed with response code: " + response.code());
+                    Toast.makeText(ProductDetailActivity.this, "Failed to create payment.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<PaymentDTO>> call, Throwable t) {
+                showLoading(false);
+                // Xử lý khi có lỗi mạng
+                Log.e("Payment", "Network error: " + t.getMessage(), t);
+                Toast.makeText(ProductDetailActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void fetchDetail(int id) {
         Log.d("ProductDetail", "Fetching product detail for ID: " + id);
         showLoading(true);
-        ProductApi api = ApiClient.getPublicClient().create(ProductApi.class);
+        ProductApi api = ApiClient.getPrivateClient(this).create(ProductApi.class);
         api.getProductDetail(id).enqueue(new Callback<ApiResponse<ProductDetailDTO>>() {
             @Override
             public void onResponse(Call<ApiResponse<ProductDetailDTO>> call, Response<ApiResponse<ProductDetailDTO>> response) {

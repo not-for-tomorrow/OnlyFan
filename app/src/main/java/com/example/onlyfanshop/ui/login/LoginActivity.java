@@ -151,7 +151,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (apiResponse == null && response.errorBody() != null) {
                     apiResponse = parseErrorBody(response.errorBody(), UserDTO.class);
                 }
-
+                Log.d("LoginActivityLog", "onResponse() called"+apiResponse.getMessage().toString());
                 if (apiResponse != null) {
                     if (apiResponse.getStatusCode() == 200) {
                         UserDTO user = apiResponse.getData();
