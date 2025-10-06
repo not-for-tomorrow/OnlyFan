@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.onlyfan.R;
 import com.example.onlyfan.ui.HomeFragment;
+import com.example.onlyfan.ui.MapFragment;
 import com.example.onlyfan.ui.ProfileFragment;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.database.FirebaseDatabase;
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_category) {
                 fragment = new CategoryFragment();
             } else if (id == R.id.nav_fav) {
-                fragment = PlaceholderFragment.newInstance("Favorites");
+                fragment = new MapFragment();
             } else if (id == R.id.nav_profile) {
                 fragment = new ProfileFragment();
             } else {
