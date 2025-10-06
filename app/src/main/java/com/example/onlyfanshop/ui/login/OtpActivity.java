@@ -35,7 +35,7 @@ public class OtpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_otp);
-        userApi = ApiClient.getClient().create(UserApi.class);
+        userApi = ApiClient.getPublicClient().create(UserApi.class);
         String email = getIntent().getStringExtra("email");
 
         tvOtpMessage = findViewById(R.id.tvOtpMessage);

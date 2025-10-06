@@ -1,6 +1,7 @@
 package com.example.onlyfanshop.ui.login;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -50,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private UserApi userApi;
     private EditText etUsername, etPassword;
-    private Button btnLogin, btnLoginGoogle, btnLoginFacebook;
+    private Button btnLogin, btnLoginGoogle;
     private ImageView logoFan;
     private TextView tvForgotPassword, tvSignUp;
     private final Gson gson = new Gson();
@@ -71,18 +72,11 @@ public class LoginActivity extends AppCompatActivity {
 
         initializeGoogleSignInLauncher();
 
-<<<<<<< Updated upstream
-        initializeFacebookLoginLauncher();
-
-        userApi = ApiClient.getClient().create(UserApi.class);
-=======
         userApi = ApiClient.getPublicClient().create(UserApi.class);
->>>>>>> Stashed changes
         etUsername = findViewById(R.id.edtUsername);
         etPassword = findViewById(R.id.edtPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnLoginGoogle = findViewById(R.id.btnLoginGoogle);
-        // removed btnLoginFacebook
         logoFan = findViewById(R.id.logoFan);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
         tvSignUp = findViewById(R.id.tvSignUp);
@@ -145,10 +139,17 @@ public class LoginActivity extends AppCompatActivity {
                 if (apiResponse == null && response.errorBody() != null) {
                     apiResponse = parseErrorBody(response.errorBody(), UserDTO.class);
                 }
-
+                Log.d("LoginActivityLog", "onResponse() called"+apiResponse.getMessage().toString());
                 if (apiResponse != null) {
                     if (apiResponse.getStatusCode() == 200) {
                         UserDTO user = apiResponse.getData();
+                        String token = user.getToken();
+                        Log.d("LoginActivityLog", "Token: " + token);
+
+                        // Lưu token vào SharedPreferences
+                        //)
+                        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                        sharedPreferences.edit().putString("jwt_token", token).apply();
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("user", user);
                         startActivity(intent);
