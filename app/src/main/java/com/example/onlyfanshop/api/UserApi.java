@@ -47,6 +47,7 @@ public interface UserApi {
     @POST("api/auth/google/login")
     Call<ApiResponse<UserDTO>> googleLogin(@Body GoogleLoginRequest request);
     
+    
     // Inner class for Google login request
     class GoogleLoginRequest {
         private String email;
@@ -73,4 +74,11 @@ public interface UserApi {
             this.username = username;
         }
     }
+<<<<<<< Updated upstream
+=======
+    
+    
+    @POST("users/logout")
+    Call<ApiResponse<Void>> logout();
+>>>>>>> Stashed changes
 }

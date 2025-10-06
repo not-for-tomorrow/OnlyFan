@@ -4,12 +4,15 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<<<<<<< Updated upstream
     
     <!-- Facebook package visibility for Android API 30+ -->
     <queries>
         <package android:name="com.facebook.katana" />
         <package android:name="com.facebook.orca" />
     </queries>
+=======
+>>>>>>> Stashed changes
 
     <application
         android:name=".OnlyFanshopApplication"
@@ -59,6 +62,7 @@
         </activity>
         <activity
             android:name=".ui.product.ProductDetailActivity"
+<<<<<<< Updated upstream
             android:exported="false" />
             
         <!-- Facebook Login Activity -->
@@ -80,6 +84,10 @@
         <!-- Facebook App ID -->
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
         <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
+=======
+            android:exported="false" /> <!-- Facebook Login Activity -->
+        
+>>>>>>> Stashed changes
     </application>
 
 </manifest>

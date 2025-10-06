@@ -30,7 +30,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.FacebookAuthProvider;
+// removed FacebookAuthProvider
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -39,12 +39,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
+// removed Facebook SDK imports
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -63,8 +58,7 @@ public class LoginActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private static final int RC_GOOGLE_SIGN_IN = 9001;
     private ActivityResultLauncher<Intent> googleSignInLauncher;
-    private CallbackManager mCallbackManager;
-    private ActivityResultLauncher<Intent> facebookLoginLauncher;
+    private AuthCredential pendingLinkCredential;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,18 +69,20 @@ public class LoginActivity extends AppCompatActivity {
 
         initializeGoogleSignIn();
 
-        initializeFacebookLogin();
-
         initializeGoogleSignInLauncher();
 
+<<<<<<< Updated upstream
         initializeFacebookLoginLauncher();
 
         userApi = ApiClient.getClient().create(UserApi.class);
+=======
+        userApi = ApiClient.getPublicClient().create(UserApi.class);
+>>>>>>> Stashed changes
         etUsername = findViewById(R.id.edtUsername);
         etPassword = findViewById(R.id.edtPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnLoginGoogle = findViewById(R.id.btnLoginGoogle);
-        btnLoginFacebook = findViewById(R.id.btnLoginFacebook);
+        // removed btnLoginFacebook
         logoFan = findViewById(R.id.logoFan);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
         tvSignUp = findViewById(R.id.tvSignUp);
@@ -101,7 +97,6 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         btnLoginGoogle.setOnClickListener(v -> signInWithGoogle());
-        btnLoginFacebook.setOnClickListener(v -> signInWithFacebook());
         
         TextWatcher watcher = new TextWatcher() {
             @Override
@@ -195,28 +190,7 @@ public class LoginActivity extends AppCompatActivity {
         Log.d("GoogleSignIn", "Google Sign-In initialized with client ID: 328191492825-8iket64hs1nr651gn0jnb19js7aimj10.apps.googleusercontent.com");
     }
 
-    private void initializeFacebookLogin() {
-        mCallbackManager = CallbackManager.Factory.create();
-        LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                Log.d("FacebookLogin", "Facebook login successful");
-                handleFacebookAccessToken(loginResult.getAccessToken());
-            }
-
-            @Override
-            public void onCancel() {
-                Log.d("FacebookLogin", "Facebook login cancelled");
-                Toast.makeText(LoginActivity.this, "Facebook login cancelled", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onError(FacebookException exception) {
-                Log.e("FacebookLogin", "Facebook login error: " + exception.getMessage());
-                Toast.makeText(LoginActivity.this, "Facebook login error: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+    // removed initializeFacebookLogin
 
     private void initializeGoogleSignInLauncher() {
         googleSignInLauncher = registerForActivityResult(
@@ -274,31 +248,11 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void initializeFacebookLoginLauncher() {
-        facebookLoginLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                // Facebook login result will be handled by CallbackManager
-                // This launcher is mainly for compatibility
-                Log.d("FacebookLogin", "Facebook login launcher result: " + result.getResultCode());
-            }
-        );
-    }
+    // removed initializeFacebookLoginLauncher
 
-    private void signInWithFacebook() {
-        // Use the new approach with proper error handling
-        LoginManager.getInstance().logInWithReadPermissions(
-            this, 
-            java.util.Arrays.asList("email", "public_profile")
-        );
-    }
+    // removed signInWithFacebook
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        // Only handle Facebook login result
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
-    }
+    // removed onActivityResult for Facebook
 
     private void firebaseAuthWithGoogle(String idToken) {
         if (idToken == null || idToken.isEmpty()) {
@@ -314,7 +268,22 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d("GoogleAuth", "Firebase authentication with Google successful");
                     FirebaseUser user = mAuth.getCurrentUser();
                     Log.d("GoogleAuth", "About to call handleSuccessfulLogin");
-                    handleSuccessfulLogin(user);
+                    if (pendingLinkCredential != null && user != null) {
+                        user.linkWithCredential(pendingLinkCredential)
+                                .addOnCompleteListener(this, linkTask -> {
+                                    if (linkTask.isSuccessful()) {
+                                        Log.d("GoogleAuth", "Linked pending credential to existing account");
+                                        pendingLinkCredential = null;
+                                        handleSuccessfulLogin(user);
+                                    } else {
+                                        String err = linkTask.getException() != null ? linkTask.getException().getMessage() : "Unknown";
+                                        Log.e("GoogleAuth", "Linking failed: " + err);
+                                        Toast.makeText(LoginActivity.this, "Liên kết tài khoản thất bại: " + err, Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                    } else {
+                        handleSuccessfulLogin(user);
+                    }
                 } else {
                     Log.e("GoogleAuth", "Firebase authentication with Google failed: " + task.getException().getMessage());
                     Toast.makeText(LoginActivity.this, "Google authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
@@ -322,26 +291,9 @@ public class LoginActivity extends AppCompatActivity {
             });
     }
 
-    private void handleFacebookAccessToken(AccessToken token) {
-        if (token == null || token.getToken() == null || token.getToken().isEmpty()) {
-            Log.e("FacebookAuth", "Facebook access token is null or empty");
-            Toast.makeText(this, "Facebook authentication failed: Invalid token", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        mAuth.signInWithCredential(credential)
-            .addOnCompleteListener(this, task -> {
-                if (task.isSuccessful()) {
-                    Log.d("FacebookAuth", "Firebase authentication with Facebook successful");
-                    FirebaseUser user = mAuth.getCurrentUser();
-                    handleSuccessfulLogin(user);
-                } else {
-                    Log.e("FacebookAuth", "Firebase authentication with Facebook failed: " + task.getException().getMessage());
-                    Toast.makeText(LoginActivity.this, "Facebook authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
+    // removed handleFacebookAccessToken
+
+    // removed callFacebookLoginApi
 
     private void handleSuccessfulLogin(FirebaseUser user) {
         Log.d("GoogleAuth", "handleSuccessfulLogin called");
@@ -378,6 +330,12 @@ public class LoginActivity extends AppCompatActivity {
                     if (apiResponse.getStatusCode() == 200) {
                         Log.d("GoogleAuth", "Google login API successful");
                         UserDTO userDTO = apiResponse.getData();
+                        String token = userDTO != null ? userDTO.getToken() : null;
+                        if (token != null && !token.isEmpty()) {
+                            SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                            prefs.edit().putString("jwt_token", token).apply();
+                            Log.d("GoogleAuth", "Saved JWT token from Google login");
+                        }
                         
                         // Log user information from backend
                         Log.d("GoogleAuth", "Backend User - Username: " + userDTO.getUsername());
