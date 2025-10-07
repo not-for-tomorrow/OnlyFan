@@ -16,7 +16,7 @@ import com.example.onlyfanshop.model.CartItemDTO;
 import java.util.List;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewholder> {
-    private List<CartItemDTO> cartItems;
+    private final List<CartItemDTO> cartItems;
 
     public CartAdapter(List<CartItemDTO> cartItems) {
         this.cartItems = cartItems;
@@ -28,13 +28,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewholder
     public CartViewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ViewholderCartBinding binding = ViewholderCartBinding.inflate(
                 LayoutInflater.from(parent.getContext()),parent,false);
-        //View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.viewholder_cart,parent,false);
         return new CartViewholder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CartViewholder holder, int position) {
-
+            holder.binding.feeEach.setText(cartItems.get(position).getPrice()+" VND");
     }
 
     @Override
