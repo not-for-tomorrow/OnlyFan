@@ -18,7 +18,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 public class ProfileFragment extends Fragment {
 
     private CardView btnEditProfile;
-    private View btnMyStores, btnSupport, btnPinCode, btnLogout;
+    private View btnMyStores, btnSupport, btnChat, btnPinCode, btnLogout;
     private SwitchCompat switchPushNotif, switchFaceId;
 
     @Nullable
@@ -36,6 +36,7 @@ public class ProfileFragment extends Fragment {
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnMyStores = view.findViewById(R.id.btnMyStores);
         btnSupport = view.findViewById(R.id.btnSupport);
+        btnChat = view.findViewById(R.id.btnChat);
         btnPinCode = view.findViewById(R.id.btnPinCode);
         btnLogout = view.findViewById(R.id.btnLogout);
         switchPushNotif = view.findViewById(R.id.switchPushNotif);
@@ -54,8 +55,11 @@ public class ProfileFragment extends Fragment {
         });
 
         btnSupport.setOnClickListener(v -> {
-            // TODO: Navigate to Support screen
             Toast.makeText(requireContext(), "Support clicked", Toast.LENGTH_SHORT).show();
+        });
+
+        btnChat.setOnClickListener(v -> {
+            startActivity(new android.content.Intent(requireContext(), com.example.onlyfanshop.ui.chat.ChatListActivity.class));
         });
 
         btnPinCode.setOnClickListener(v -> {
