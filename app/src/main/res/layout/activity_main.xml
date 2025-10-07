@@ -48,14 +48,14 @@
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:backgroundTint="#F44336"
         android:text="Logout"
         android:textColor="@android:color/white"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnOpenDashboard" />
+        app:layout_constraintTop_toBottomOf="@+id/btnOpenTestChat" />
 
     <Button
         android:id="@+id/btnOpenDashboard"
@@ -66,6 +66,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnTestApi" />
+
+    <Button
+        android:id="@+id/btnOpenTestChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open Test Chat"
+        app:layout_constraintTop_toBottomOf="@+id/btnOpenDashboard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/labelEnterProduct"
@@ -90,5 +100,7 @@
         app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnViewProduct" />
+
+    
 
 </androidx.constraintlayout.widget.ConstraintLayout>
