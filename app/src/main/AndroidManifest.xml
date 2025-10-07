@@ -8,6 +8,7 @@
         <package android:name="com.facebook.katana" />
         <package android:name="com.facebook.orca" />
     </queries>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".OnlyFanshopApplication"
