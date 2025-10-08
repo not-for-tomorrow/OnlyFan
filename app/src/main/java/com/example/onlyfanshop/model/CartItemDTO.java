@@ -11,8 +11,9 @@ public class CartItemDTO implements Serializable {
     private Integer quantity;
     @SerializedName("price")
     private Double price;
-    @SerializedName("userID")
+    @SerializedName("product")
     private ProductDTO productDTO;
+
 
     public CartItemDTO() {
     }
@@ -22,7 +23,9 @@ public class CartItemDTO implements Serializable {
         this.quantity = quantity;
         this.price = price;
         this.productDTO = productDTO;
+
     }
+
 
     public Integer getCartItemID() {
         return cartItemID;
