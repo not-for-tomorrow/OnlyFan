@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.onlyfanshop.ui.cart.CartActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView textView;
     private EditText editProductId;
     private Button btnViewProduct;
-    private Button btnTestApi;
+    private Button btnViewCart;
     private Button btnLogout;
 
     private FirebaseAuth mAuth;
@@ -65,12 +66,15 @@ public class MainActivity extends AppCompatActivity {
 
         editProductId = findViewById(R.id.editProductId);
         btnViewProduct = findViewById(R.id.btnViewProduct);
-        btnTestApi = findViewById(R.id.btnTestApi);
+        btnViewCart = findViewById(R.id.btnViewCart);
         btnLogout = findViewById(R.id.btnLogout);
         btnOpenDashboard = findViewById(R.id.btnOpenDashboard);
 
         btnViewProduct.setOnClickListener(v -> openProductDetail());
-        btnTestApi.setOnClickListener(v -> testApiOnly());
+        btnViewCart.setOnClickListener(v -> {
+            assert user != null;
+            viewCart(user.getUsername());
+        });
         btnLogout.setOnClickListener(v -> logout());
 
         btnOpenDashboard.setOnClickListener(v -> {
@@ -153,10 +157,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void testApiOnly() {
+    private void viewCart(String username) {
         Log.d("MainActivity", "Testing API only...");
+        Intent intent = new Intent(MainActivity.this, CartActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("username", username);
+        intent.putExtras(bundle);
+        startActivity(intent);
 
-        testRawHttp();
+        //testRawHttp();
     }
 
     private void testRawHttp() {

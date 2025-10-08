@@ -5,26 +5,26 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
 public class ProductDTO implements Serializable {
-    @SerializedName("cartItemID")
+    @SerializedName("productID")
     private Integer productID;
 
-    @SerializedName("cartItemID")
+    @SerializedName("productName")
     private String productName;
-    @SerializedName("cartItemID")
+    @SerializedName("briefDescription")
     private String briefDescription;
-    @SerializedName("cartItemID")
+    @SerializedName("fullDescription")
     private String fullDescription;
-    @SerializedName("cartItemID")
+    @SerializedName("technicalSpecifications")
     private String technicalSpecifications;
-    @SerializedName("cartItemID")
+    @SerializedName("price")
     private Double price;
-    @SerializedName("cartItemID")
+    @SerializedName("imageURL")
     private String imageURL;
 
-    @SerializedName("cartItemID")
+    @SerializedName("category")
     private CategoryDTO category;
 
-    @SerializedName("cartItemID")
+    @SerializedName("brand")
     private BrandDTO brand;
 
     public ProductDTO() {

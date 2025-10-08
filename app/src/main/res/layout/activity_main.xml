@@ -9,6 +9,15 @@
     tools:context=".MainActivity">
 
     <Button
+        android:id="@+id/btnViewCart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View cart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnViewProduct" />
+
+    <Button
         android:id="@+id/btnViewProduct"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,10 +34,9 @@
         android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.47" />
+        app:layout_constraintVertical_bias="0.404" />
 
     <EditText
         android:id="@+id/editProductId"
@@ -48,7 +56,7 @@
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="16dp"
         android:backgroundTint="#F44336"
         android:text="Logout"
         android:textColor="@android:color/white"
@@ -61,11 +69,10 @@
         android:id="@+id/btnOpenDashboard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:text="Open Dashboard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnTestApi" />
+        app:layout_constraintTop_toBottomOf="@+id/btnViewCart" />
 
     <TextView
         android:id="@+id/labelEnterProduct"
@@ -79,16 +86,5 @@
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <Button
-        android:id="@+id/btnTestApi"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Test API Connection"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.487"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnViewProduct" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
