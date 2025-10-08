@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
-import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.model.BannerModel;
+import com.example.onlyfanshop.R;
 
 import java.util.ArrayList;
 
@@ -35,13 +35,13 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerView
 
     @NonNull
     @Override
-    public BannerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public BannerAdapter.BannerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         context = parent.getContext();
         return new BannerViewHolder(LayoutInflater.from(context).inflate(R.layout.banner_item, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BannerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull BannerAdapter.BannerViewHolder holder, int position) {
         holder.setImage(sliderItems.get(position));
         if (position == sliderItems.size() - 2) {
             viewPager2.post(runnable);

@@ -10,6 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -45,6 +48,17 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
 
     private Button btnOpenDashboard;
+    private Button btnOpenTestChat;
+
+    // Chat test views
+    private RecyclerView rvCustomer, rvAdmin;
+    private EditText edtCustomer, edtAdmin;
+    private Button btnSendCustomer, btnSendAdmin;
+    private final java.util.List<com.example.onlyfanshop.model.chat.Message> msgsCustomer = new java.util.ArrayList<>();
+    private final java.util.List<com.example.onlyfanshop.model.chat.Message> msgsAdmin = new java.util.ArrayList<>();
+    private RecyclerView.Adapter<?> adapterCustomer, adapterAdmin;
+    private com.google.firebase.database.DatabaseReference messagesRef;
+    private String conversationId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         btnViewCart = findViewById(R.id.btnViewCart);
         btnLogout = findViewById(R.id.btnLogout);
         btnOpenDashboard = findViewById(R.id.btnOpenDashboard);
+        btnOpenTestChat = findViewById(R.id.btnOpenTestChat);
 
         btnViewProduct.setOnClickListener(v -> openProductDetail());
         btnViewCart.setOnClickListener(v -> {
@@ -93,7 +108,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        btnOpenTestChat.setOnClickListener(v -> {
+            Intent i = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.TestChatActivity.class);
+            startActivity(i);
+        });
     }
+
 
     private void openProductDetail() {
         String productIdText = editProductId.getText().toString().trim();

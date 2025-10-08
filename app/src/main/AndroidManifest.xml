@@ -66,6 +66,11 @@
             android:name=".ui.product.ProductDetailActivity"
             android:exported="false" /> <!-- Facebook Login Activity -->
 
+        <activity android:name=".ui.chat.ChatListActivity" android:exported="false" />
+        <activity android:name=".ui.chat.ChatRoomActivity" android:exported="false" />
+        <activity android:name=".ui.chat.TestChatActivity" android:exported="false" />
+        <activity android:name=".ui.chat.ChatActivity" android:exported="false" />
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />

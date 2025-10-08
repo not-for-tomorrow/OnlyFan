@@ -45,7 +45,7 @@ public interface UserApi {
     
     // Google login endpoint
     @POST("api/auth/google/login")
-    Call<ApiResponse<UserDTO>> googleLogin(@Body GoogleLoginRequest request);
+    Call<ApiResponse<UserDTO>> googleLogin(@Body GoogleLoginRequest request, @retrofit2.http.Header("X-Custom-Token") String customToken);
     
     // Inner class for Google login request
     class GoogleLoginRequest {

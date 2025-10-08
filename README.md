@@ -1,3 +1,7 @@
+## Chat setup
+
+Set `res/values/strings.xml` key `admin_uid` to your Firebase Admin user UID so the app opens a conversation with that admin by default.
+
 
 <!-- Banner -->
 <p align="center">

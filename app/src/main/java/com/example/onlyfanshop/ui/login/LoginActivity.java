@@ -43,6 +43,8 @@ import com.google.android.gms.tasks.Task;
 // removed Facebook SDK imports
 
 import okhttp3.ResponseBody;
+import android.util.Base64;
+import java.nio.charset.StandardCharsets;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -304,6 +306,14 @@ public class LoginActivity extends AppCompatActivity {
             Log.d("GoogleAuth", "Firebase User - Email: " + user.getEmail());
             Log.d("GoogleAuth", "Firebase User - UID: " + user.getUid());
 
+            // Log Firebase ID token (useful for debugging 403 from backend)
+            try {
+                user.getIdToken(true).addOnSuccessListener(result -> {
+                    String firebaseIdToken = result != null ? result.getToken() : null;
+                    Log.d("GoogleAuth", "Firebase ID Token: " + firebaseIdToken);
+                }).addOnFailureListener(e -> Log.e("GoogleAuth", "Failed to get Firebase ID token: " + e.getMessage()));
+            } catch (Exception ignored) {}
+
             callGoogleLoginApi(user.getEmail(), user.getDisplayName());
         } else {
             Log.e("GoogleAuth", "FirebaseUser is null in handleSuccessfulLogin");
@@ -317,8 +327,19 @@ public class LoginActivity extends AppCompatActivity {
         Log.d("GoogleAuth", "Email: " + email);
         
         UserApi.GoogleLoginRequest request = new UserApi.GoogleLoginRequest(email, username);
-        
-        userApi.googleLogin(request).enqueue(new Callback<ApiResponse<UserDTO>>() {
+
+        // Build a Base64URL token to keep header ASCII-safe
+        String role = "CUSTOMER"; // default; backend sets final role
+        String payloadJson = "{\"role\":\"" + role + "\",\"email\":\"" + email + "\",\"username\":\"" + (username == null ? "" : username) + "\"}";
+        String customToken = Base64.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP | Base64.URL_SAFE);
+
+        Log.d("GoogleAuth", "X-Custom-Token (b64url): " + customToken);
+        try {
+            String decoded = new String(android.util.Base64.decode(customToken, android.util.Base64.URL_SAFE | android.util.Base64.NO_WRAP));
+            Log.d("GoogleAuth", "X-Custom-Token decoded: " + decoded);
+        } catch (Exception ignored) {}
+
+        userApi.googleLogin(request, customToken).enqueue(new Callback<ApiResponse<UserDTO>>() {
             @Override
             public void onResponse(Call<ApiResponse<UserDTO>> call, Response<ApiResponse<UserDTO>> response) {
                 Log.d("GoogleAuth", "Response code: " + response.code());
@@ -333,6 +354,7 @@ public class LoginActivity extends AppCompatActivity {
                         UserDTO userDTO = apiResponse.getData();
                         String token = userDTO != null ? userDTO.getToken() : null;
                         if (token != null && !token.isEmpty()) {
+                            Log.d("GoogleAuth", "JWT from backend: " + token);
                             SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
                             prefs.edit().putString("jwt_token", token).apply();
                             Log.d("GoogleAuth", "Saved JWT token from Google login");
@@ -360,6 +382,10 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 } else {
                     Log.e("GoogleAuth", "Google login API response failed: " + response.code());
+                    try {
+                        String err = response.errorBody() != null ? response.errorBody().string() : "<no body>";
+                        Log.e("GoogleAuth", "Error body: " + err);
+                    } catch (Exception ignored) {}
                     String errorMessage = "Không thể kết nối đến server";
                     if (response.code() == 400) {
                         // Email conflict - hiển thị Toast

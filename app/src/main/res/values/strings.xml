@@ -21,4 +21,5 @@
     <string name="y_u_th_ch">Yêu thích</string>
     <string name="danh_m_c">Danh mục</string>
     <string name="home">Home</string>
+    <string name="admin_uid">ADMIN_UID_PLACEHOLDER</string>
 </resources>
