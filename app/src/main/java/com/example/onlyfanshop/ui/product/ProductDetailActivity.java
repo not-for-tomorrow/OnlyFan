@@ -1,6 +1,7 @@
 package com.example.onlyfanshop.ui.product;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.api.ApiClient;
+import com.example.onlyfanshop.api.CartItemApi;
 import com.example.onlyfanshop.api.PaymentApi;
 import com.example.onlyfanshop.api.ProductApi;
 import com.example.onlyfanshop.model.PaymentDTO;
@@ -56,11 +58,12 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnAddToCart = findViewById(R.id.btnAddToCart);
         progressBar = findViewById(R.id.progressBar);
 
-        btnAddToCart.setOnClickListener(v -> testPayment());
+
 
         findViewById(R.id.btnFavorite).setOnClickListener(v -> toggleFavorite());
 
         int id = getIntent().getIntExtra(EXTRA_PRODUCT_ID, -1);
+        btnAddToCart.setOnClickListener(v -> addTocart(id));
         if (id > 0) {
             fetchDetail(id);
         }
@@ -116,6 +119,29 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void addTocart(int productID){
+        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        String username = sharedPreferences.getString("username", "");
+        CartItemApi cartItemApi = ApiClient.getPrivateClient(this).create(CartItemApi.class);
+        cartItemApi.addToCart(productID, username).enqueue(new Callback<>() {
+
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(ProductDetailActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ProductDetailActivity.this, "Thêm thất bại", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                Toast.makeText(ProductDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     private void fetchDetail(int id) {
         Log.d("ProductDetail", "Fetching product detail for ID: " + id);

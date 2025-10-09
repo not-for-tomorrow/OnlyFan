@@ -51,7 +51,6 @@ public class CartActivity extends AppCompatActivity {
             public void onIncrease(int productId) {
                 addQuantity(USERNAME, productId, cartAdapter);
             }
-
             @Override
             public void onDecrease(int productId) {
                 minusQuantity(USERNAME, productId, cartAdapter);
@@ -138,6 +137,7 @@ public class CartActivity extends AppCompatActivity {
             public void onFailure(retrofit2.Call<ApiResponse<Void>> call, Throwable t) {
                 Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
+
 
 
         });
