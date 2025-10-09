@@ -1,17 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:background="@color/lightGrey">
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@android:color/white">
 
     <TextView
-        android:id="@+id/placeholderText"
+        android:id="@+id/tv_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Coming soon..."
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"/>
-</FrameLayout>
+        android:text="🚧"
+        android:textSize="80sp" />
+
+    <TextView
+        android:id="@+id/tv_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Tính năng đang được phát triển"
+        android:textSize="18sp"
+        android:textColor="@android:color/darker_gray"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Sẽ sớm ra mắt!"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray" />
+
+</LinearLayout>

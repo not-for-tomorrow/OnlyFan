@@ -23,4 +23,9 @@
     <string name="home">Home</string>
     <string name="admin_uid">ADMIN_UID_PLACEHOLDER</string>
     <string name="sold_format">Đã bán %1$d</string>
+
+    <!-- New strings -->
+    <string name="chats">Chats</string>
+    <string name="favorites">Favorites</string>
+    <string name="profile">Profile</string>
 </resources>
