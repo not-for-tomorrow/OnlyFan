@@ -152,6 +152,12 @@ public class LoginActivity extends AppCompatActivity {
                         //)
                         SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
                         sharedPreferences.edit().putString("jwt_token", token).apply();
+                        sharedPreferences.edit().putString("username", user.getUsername()).apply();
+                        sharedPreferences.edit().putString("email", user.getEmail()).apply();
+                        sharedPreferences.edit().putString("role", user.getRole()).apply();
+                        sharedPreferences.edit().putString("authProvider", user.getAuthProvider()).apply();
+                        sharedPreferences.edit().putInt("usedId", user.getUserID()).apply();
+
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("user", user);
                         startActivity(intent);
