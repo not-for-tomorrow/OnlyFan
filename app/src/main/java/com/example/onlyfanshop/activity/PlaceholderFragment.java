@@ -30,7 +30,7 @@ public class PlaceholderFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.placeholder_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_placeholder, container, false);
 
         TextView tvIcon = view.findViewById(R.id.tv_icon);
         TextView tvMessage = view.findViewById(R.id.tv_message);

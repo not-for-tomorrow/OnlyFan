@@ -9,7 +9,6 @@ import com.google.gson.GsonBuilder;
 
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -104,7 +103,7 @@ public final class ApiClient {
             synchronized (ApiClient.class) {
                 if (retrofitPrivate == null) {
                     if (okHttpPrivate == null) {
-                        okHttpPrivate = buildOkHttp(true, context);
+                        okHttpPrivate = buildOkHttp(true, context.getApplicationContext());
                     }
                     retrofitPrivate = buildRetrofit(okHttpPrivate);
                 }
@@ -137,13 +136,7 @@ public final class ApiClient {
                 .readTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(20, TimeUnit.SECONDS);
 
-        // Logging
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(debugLoggingEnabled ? HttpLoggingInterceptor.Level.BODY
-                : HttpLoggingInterceptor.Level.BASIC);
-        b.addInterceptor(logging);
-
-        // Default headers
+        // Default headers (trước)
         b.addInterceptor(chain -> {
             Request original = chain.request();
             Request.Builder builder = original.newBuilder()
@@ -158,7 +151,7 @@ public final class ApiClient {
             return chain.proceed(builder.build());
         });
 
-        // Authorization
+        // Authorization (giữa)
         if (withAuth) {
             if (authToken != null && !authToken.isEmpty()) {
                 b.addInterceptor(chain -> {
@@ -168,16 +161,22 @@ public final class ApiClient {
                     return chain.proceed(req);
                 });
             } else if (context != null) {
-                // Để nguyên theo code của bạn: tự lấy token trong AuthInterceptor
-                b.addInterceptor(new AuthInterceptor(context));
+                // Dùng AuthInterceptor của bạn (đọc SharedPreferences "MyAppPrefs"/"jwt_token")
+                b.addInterceptor(new AuthInterceptor(context.getApplicationContext()));
             }
         }
 
+        // Logging (cuối) để log đầy đủ cả Authorization header
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(debugLoggingEnabled ? HttpLoggingInterceptor.Level.BODY
+                : HttpLoggingInterceptor.Level.BASIC);
+        b.addInterceptor(logging);
+
         return b.build();
     }
-    // Thêm vào bên trong class ApiClient:
-    public static retrofit2.Retrofit getInstance() {
-        // Trả về public client mặc định để tương thích các chỗ gọi cũ
+
+    // Tương thích chỗ gọi cũ
+    public static Retrofit getInstance() {
         return getPublicClient();
     }
 }

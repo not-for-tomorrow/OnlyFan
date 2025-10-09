@@ -1,7 +1,6 @@
 package com.example.onlyfanshop.ui;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -9,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,16 +24,17 @@ import com.example.onlyfanshop.adapter.BannerAdapter;
 import com.example.onlyfanshop.adapter.PopularAdapter;
 import com.example.onlyfanshop.api.ApiClient;
 import com.example.onlyfanshop.api.ProductApi;
+import com.example.onlyfanshop.api.ProfileApi;
 import com.example.onlyfanshop.model.BannerModel;
 import com.example.onlyfanshop.model.ProductDTO;
+import com.example.onlyfanshop.model.User;
 import com.example.onlyfanshop.model.response.ApiResponse;
 import com.example.onlyfanshop.model.response.HomePageData;
+import com.example.onlyfanshop.model.response.UserResponse;
 import com.example.onlyfanshop.ui.product.ProductDetailActivity;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +47,9 @@ public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
 
-    // URL instance của Realtime Database (đúng như ảnh bạn gửi)
+    // URL instance của Realtime Database
     private static final String DB_URL = "https://onlyfan-f9406-default-rtdb.asia-southeast1.firebasedatabase.app";
-    // Tên node đúng phân biệt hoa/thường (ảnh chụp là “Banner”)
+    // Tên node (phân biệt hoa/thường)
     private static final String BANNER_NODE = "Banner";
 
     // Banner
@@ -63,6 +64,9 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressBarPopular;
     private PopularAdapter popularAdapter;
     private ProductApi productApi;
+
+    // Welcome
+    private TextView tvUserName;
 
     private final Runnable sliderRunnable = new Runnable() {
         @Override public void run() {
@@ -88,6 +92,9 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
+        // Welcome
+        tvUserName = v.findViewById(R.id.tvUserName);
+
         // Banner
         viewPagerBanner = v.findViewById(R.id.viewPagerBanner);
         progressBarBanner = v.findViewById(R.id.progressBarBanner);
@@ -109,7 +116,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Load banner từ Realtime Database (KHÔNG còn đọc từ Storage)
+        // Load banner từ Realtime Database
         loadBannersFromRealtimeDb();
 
         // Popular
@@ -128,6 +135,9 @@ public class HomeFragment extends Fragment {
 
         productApi = ApiClient.getPrivateClient(requireContext()).create(ProductApi.class);
         loadPopular();
+
+        // Lấy tên user cho phần Welcome
+        fetchUserName();
     }
 
     // -------- Banner từ Realtime Database --------
@@ -142,14 +152,10 @@ public class HomeFragment extends Fragment {
                 .getReference()
                 .child(BANNER_NODE);
 
-        // Đọc 1 lần (get). Có thể đổi sang addValueEventListener nếu muốn realtime.
         ref.get().addOnSuccessListener(snapshot -> {
             ArrayList<BannerModel> banners = new ArrayList<>();
-            // Hỗ trợ cả 2 dạng:
-            // - Banner: { "0": { "url": "https://..." }, "1": { "url": "..." } }
-            // - Banner: { "0": "https://...", "1": "https://..." }
             for (DataSnapshot child : snapshot.getChildren()) {
-                String url = null;
+                String url;
                 if (child.hasChild("url")) {
                     url = child.child("url").getValue(String.class);
                 } else {
@@ -225,5 +231,34 @@ public class HomeFragment extends Fragment {
                         popularAdapter.submitList(new ArrayList<>());
                     }
                 });
+    }
+
+    // ---------------- Welcome username ----------------
+    private void fetchUserName() {
+        ProfileApi profileApi = ApiClient.getPrivateClient(requireContext()).create(ProfileApi.class);
+        profileApi.getUser().enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<UserResponse> call, @NonNull Response<UserResponse> response) {
+                if (!isAdded()) return;
+
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    User user = response.body().getData();
+                    String name = user.getUsername();
+                    if (name == null || name.trim().isEmpty()) name = "Guest";
+                    tvUserName.setText(name);
+                } else if (response.code() == 401) {
+                    Log.w(TAG, "Unauthorized. Token may be invalid/expired.");
+                    // TODO: Điều hướng Login nếu cần
+                } else {
+                    Log.w(TAG, "getUser failed: code=" + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Log.e(TAG, "getUser error", t);
+            }
+        });
     }
 }
