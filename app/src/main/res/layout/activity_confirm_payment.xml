@@ -24,7 +24,7 @@
 
 
                 <RadioGroup
-                    android:id="@+id/radioGroup2"
+                    android:id="@+id/radioAddress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="270dp"
@@ -33,22 +33,23 @@
                     app:layout_constraintTop_toTopOf="parent">
 
                     <RadioButton
-                        android:id="@+id/radioButton6"
+                        android:id="@+id/radioBtnDfAd"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Địa chỉ  mặc định" />
 
                     <RadioButton
-                        android:id="@+id/radioButton7"
+                        android:id="@+id/radioBtnOtherAd"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Địa chỉ khác" />
                 </RadioGroup>
+
                 <TextView
-                    android:id="@+id/textView6"
+                    android:id="@+id/textViewDfAd"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TextView"
+                    android:text="DefaultAddress"
                     android:textSize="20sp"
                     android:visibility="invisible"
                     app:layout_constraintBottom_toBottomOf="@+id/edtDefaultAdress"
@@ -57,40 +58,40 @@
                     app:layout_constraintTop_toTopOf="@+id/edtDefaultAdress" />
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/textViewOtherAd"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TextView"
+                    android:text="Other Address"
                     android:textSize="20sp"
                     android:visibility="invisible"
-                    app:layout_constraintBottom_toBottomOf="@+id/edtotherAdress"
-                    app:layout_constraintEnd_toEndOf="@+id/edtotherAdress"
-                    app:layout_constraintStart_toStartOf="@+id/edtotherAdress"
-                    app:layout_constraintTop_toTopOf="@+id/edtotherAdress" />
+                    app:layout_constraintBottom_toBottomOf="@+id/edtOtherAdress"
+                    app:layout_constraintEnd_toEndOf="@+id/edtOtherAdress"
+                    app:layout_constraintStart_toStartOf="@+id/edtOtherAdress"
+                    app:layout_constraintTop_toTopOf="@+id/edtOtherAdress" />
 
                 <EditText
                     android:id="@+id/edtDefaultAdress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
                     android:layout_marginTop="4dp"
                     android:hint="Địa chỉ mặc định"
-                    android:visibility="invisible"
                     android:inputType="text"
+                    android:minHeight="48dp"
+                    android:visibility="invisible"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/radioGroup2"
+                    app:layout_constraintStart_toEndOf="@id/radioAddress"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <EditText
-                    android:id="@+id/edtotherAdress"
+                    android:id="@+id/edtOtherAdress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
+                    android:hint="Địa chỉ khác      "
                     android:inputType="text"
+                    android:minHeight="48dp"
                     android:visibility="invisible"
-                    android:hint="Địa chỉ khác"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/radioGroup2"
+                    app:layout_constraintEnd_toEndOf="@id/edtDefaultAdress"
+                    app:layout_constraintStart_toStartOf="@+id/edtDefaultAdress"
                     app:layout_constraintTop_toBottomOf="@+id/edtDefaultAdress" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
