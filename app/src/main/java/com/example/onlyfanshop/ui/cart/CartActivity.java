@@ -43,8 +43,7 @@ public class CartActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         binding.rclViewCart.setLayoutManager(new LinearLayoutManager(this));
         USERNAME = getIntent().getStringExtra("username");
-        //recyclerViewCartItem.setLayoutManager(new LinearLayoutManager(this));
-        cartAdapter = new CartAdapter(this, cartItems);
+        cartAdapter = new CartAdapter(this, cartItems, true);
         binding.rclViewCart.setAdapter(cartAdapter);
         cartAdapter.setOnQuantityChangeListener(new CartAdapter.OnQuantityChangeListener() {
             @Override

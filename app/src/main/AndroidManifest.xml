@@ -8,6 +8,7 @@
         <package android:name="com.facebook.katana" />
         <package android:name="com.facebook.orca" />
     </queries>
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -21,6 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.OnlyFanshop">
+        <activity
+            android:name=".ui.payment.ConfirmPaymentActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.payment.PaymentResultActivity"
             android:exported="false" />
@@ -51,7 +55,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.DashboardActivity"
+        <activity
+            android:name=".activity.DashboardActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
@@ -65,11 +70,18 @@
         <activity
             android:name=".ui.product.ProductDetailActivity"
             android:exported="false" /> <!-- Facebook Login Activity -->
-
-        <activity android:name=".ui.chat.ChatListActivity" android:exported="false" />
-        <activity android:name=".ui.chat.ChatRoomActivity" android:exported="false" />
-        <activity android:name=".ui.chat.TestChatActivity" android:exported="false" />
-        <activity android:name=".ui.chat.ChatActivity" android:exported="false" />
+        <activity
+            android:name=".ui.chat.ChatListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.chat.ChatRoomActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.chat.TestChatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.chat.ChatActivity"
+            android:exported="false" />
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
