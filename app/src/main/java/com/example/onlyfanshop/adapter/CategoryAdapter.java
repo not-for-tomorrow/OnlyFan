@@ -1,243 +1,110 @@
 package com.example.onlyfanshop.adapter;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.view.LayoutInflater;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.text.TextUtils;
+import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.onlyfanshop.R;
-import com.example.onlyfanshop.databinding.ViewholderCategoryBinding;
-import com.example.onlyfanshop.model.CategoryModel;
+import com.example.onlyfanshop.model.CategoryDTO;
 
-import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
+public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryVH> {
 
-    private final ArrayList<CategoryModel> originalList = new ArrayList<>();
-    private final ArrayList<CategoryModel> displayList = new ArrayList<>();
-    private ArrayList<CategoryModel> item;
+    private final List<CategoryDTO> items = new ArrayList<>();
+    @Nullable
+    private Integer selectedId = null;
 
-    private Context context;
-    private int selectedPosition = -1;
-    private int lastSelectedPosition = -1;
-
-    private String highlightQuery = "";
-    @ColorInt
-    private int highlightColor = Color.parseColor("#FFB300");
-
-    public interface OnCategoryClick {
-        void onClick(CategoryModel model, int position);
-    }
-    private OnCategoryClick onCategoryClick;
-
-    public enum SortMode {
-        DEFAULT, NAME_ASC, NAME_DESC, LENGTH_ASC, LENGTH_DESC, ID_ASC, ID_DESC
-    }
-    private SortMode currentSort = SortMode.DEFAULT;
-
-    public CategoryAdapter(ArrayList<CategoryModel> item) {
-        this.item = item;
-        if (item != null) {
-            originalList.addAll(item);
-            displayList.addAll(item);
-        }
-        setHasStableIds(true);
+    public interface OnCategoryClickListener {
+        void onClick(@Nullable Integer id, @NonNull String name);
     }
 
-    public CategoryAdapter(ArrayList<CategoryModel> item, OnCategoryClick listener) {
-        this(item);
-        this.onCategoryClick = listener;
+    private final OnCategoryClickListener listener;
+
+    public CategoryAdapter(@NonNull OnCategoryClickListener listener) {
+        this.listener = listener;
     }
 
-    public void setOnCategoryClickListener(OnCategoryClick l) { this.onCategoryClick = l; }
-
-    public void updateData(List<CategoryModel> newData) {
-        originalList.clear();
-        if (newData != null) originalList.addAll(newData);
-        applyFilterAndSort(highlightQuery, currentSort, false);
-    }
-
-    public void setHighlightQuery(String query) {
-        this.highlightQuery = query == null ? "" : query.trim();
+    public void submitList(@NonNull List<CategoryDTO> data) {
+        items.clear();
+        items.addAll(data);
         notifyDataSetChanged();
     }
 
-    public void applyFilterAndSort(String query, SortMode mode) {
-        applyFilterAndSort(query, mode, true);
-    }
-
-    private void applyFilterAndSort(String query, SortMode mode, boolean userAction) {
-        String q = query == null ? "" : query.trim();
-        this.highlightQuery = q;
-        this.currentSort = (mode == null ? SortMode.DEFAULT : mode);
-
-        displayList.clear();
-        if (q.isEmpty()) {
-            displayList.addAll(originalList);
-        } else {
-            String normQ = normalize(q);
-            for (CategoryModel c : originalList) {
-                String title = c.getTitle() == null ? "" : c.getTitle();
-                if (normalize(title).contains(normQ)) {
-                    displayList.add(c);
-                }
-            }
-        }
-
-        sortInternal(displayList, currentSort);
-
-        if (userAction) {
-            selectedPosition = -1;
-            lastSelectedPosition = -1;
-        }
-
-        item = new ArrayList<>(displayList);
+    public void setSelectedId(@Nullable Integer id) {
+        selectedId = id;
         notifyDataSetChanged();
-    }
-
-    private void sortInternal(List<CategoryModel> list, SortMode mode) {
-        switch (mode) {
-            case NAME_ASC:
-                Collections.sort(list, Comparator.comparing(c -> safe(c.getTitle())));
-                break;
-            case NAME_DESC:
-                Collections.sort(list, (a, b) -> safe(b.getTitle()).compareTo(safe(a.getTitle())));
-                break;
-            case LENGTH_ASC:
-                Collections.sort(list, Comparator.comparingInt(a -> safe(a.getTitle()).length()));
-                break;
-            case LENGTH_DESC:
-                Collections.sort(list, (a, b) ->
-                        Integer.compare(safe(b.getTitle()).length(), safe(a.getTitle()).length()));
-                break;
-            case ID_ASC:
-                Collections.sort(list, Comparator.comparingInt(this::safeId));
-                break;
-            case ID_DESC:
-                Collections.sort(list, (a, b) -> Integer.compare(safeId(b), safeId(a)));
-                break;
-            case DEFAULT:
-            default:
-                break;
-        }
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        context = parent.getContext();
-        ViewholderCategoryBinding binding = ViewholderCategoryBinding.inflate(
-                LayoutInflater.from(context), parent, false);
-        return new ViewHolder(binding);
+    public CategoryVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        final int padH = (int) (parent.getResources().getDisplayMetrics().density * 12);
+        final int padV = (int) (parent.getResources().getDisplayMetrics().density * 8);
+
+        android.widget.TextView tv = new android.widget.TextView(parent.getContext());
+        RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        lp.setMargins(padH, padV, padH, padV);
+        tv.setLayoutParams(lp);
+
+        tv.setPadding(padH, padV, padH, padV);
+        tv.setSingleLine(true);
+        tv.setEllipsize(TextUtils.TruncateAt.END);
+        tv.setTextSize(14);
+        tv.setTypeface(Typeface.DEFAULT_BOLD);
+
+        return new CategoryVH(tv);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        if (position < 0 || position >= displayList.size()) return;
-        CategoryModel model = displayList.get(position);
-
-        String title = model.getTitle() == null ? "" : model.getTitle();
-        if (highlightQuery.isEmpty()) {
-            holder.binding.titleTxt.setText(title);
-        } else {
-            holder.binding.titleTxt.setText(buildHighlighted(title, highlightQuery));
-        }
-
-        holder.binding.titleTxt.setOnClickListener(view -> {
-            lastSelectedPosition = selectedPosition;
-
-            int adapterPos = holder.getAdapterPosition();
-            if (adapterPos == RecyclerView.NO_POSITION) return;
-
-            selectedPosition = adapterPos;
-            if (lastSelectedPosition != -1) notifyItemChanged(lastSelectedPosition);
-            notifyItemChanged(selectedPosition);
-
-            if (onCategoryClick != null &&
-                    selectedPosition >= 0 &&
-                    selectedPosition < displayList.size()) {
-                onCategoryClick.onClick(displayList.get(selectedPosition), selectedPosition);
-            }
+    public void onBindViewHolder(@NonNull CategoryVH holder, int position) {
+        CategoryDTO item = items.get(position);
+        boolean isSelected = (item.getId() == null && selectedId == null)
+                || (item.getId() != null && item.getId().equals(selectedId));
+        holder.bind(item, isSelected);
+        holder.itemView.setOnClickListener(v -> {
+            selectedId = item.getId();
+            notifyDataSetChanged();
+            listener.onClick(item.getId(), item.getName() != null ? item.getName() : "");
         });
-
-        if (selectedPosition == position) {
-            holder.binding.titleTxt.setBackgroundResource(R.drawable.green_bg);
-            holder.binding.titleTxt.setTextColor(context.getResources().getColor(R.color.white));
-        } else {
-            holder.binding.titleTxt.setBackgroundResource(R.drawable.stroke_bg);
-            holder.binding.titleTxt.setTextColor(context.getResources().getColor(R.color.black));
-        }
     }
 
     @Override
     public int getItemCount() {
-        return displayList.size();
+        return items.size();
     }
 
-    @Override
-    public long getItemId(int position) {
-        if (position < 0 || position >= displayList.size()) return position;
-        CategoryModel c = displayList.get(position);
-        try {
-            return c.getId();
-        } catch (Exception e) {
-            String t = c.getTitle();
-            return t != null ? t.hashCode() : position;
+    static class CategoryVH extends RecyclerView.ViewHolder {
+        private final android.widget.TextView tv;
+
+        public CategoryVH(@NonNull View itemView) {
+            super(itemView);
+            tv = (android.widget.TextView) itemView;
         }
-    }
 
-    private CharSequence buildHighlighted(String original, String query) {
-        try {
-            String normOriginal = normalize(original);
-            String normQuery = normalize(query);
-            int start = normOriginal.indexOf(normQuery);
-            if (start < 0) return original;
-            SpannableString span = new SpannableString(original);
-            span.setSpan(
-                    new ForegroundColorSpan(highlightColor),
-                    start,
-                    Math.min(start + query.length(), original.length()),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            );
-            return span;
-        } catch (Exception e) {
-            return original;
-        }
-    }
+        void bind(@NonNull CategoryDTO item, boolean selected) {
+            tv.setText(item.getName() != null ? item.getName() : "");
 
-    private String normalize(String s) {
-        if (s == null) return "";
-        return Normalizer.normalize(s, Normalizer.Form.NFD)
-                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
-                .toLowerCase();
-    }
-
-    private String safe(String s) { return s == null ? "" : s; }
-
-    private int safeId(CategoryModel c) {
-        try {
-            return c.getId();
-        } catch (Exception ignore) {
-            return 0;
-        }
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        ViewholderCategoryBinding binding;
-        public ViewHolder(ViewholderCategoryBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
+            float radius = tv.getResources().getDisplayMetrics().density * 16;
+            GradientDrawable bg = new GradientDrawable();
+            bg.setCornerRadius(radius);
+            if (selected) {
+                bg.setColor(0xFF212121);
+                tv.setTextColor(0xFFFFFFFF);
+            } else {
+                bg.setColor(0xFFEFEFEF);
+                tv.setTextColor(0xFF212121);
+            }
+            tv.setBackground(bg);
         }
     }
 }

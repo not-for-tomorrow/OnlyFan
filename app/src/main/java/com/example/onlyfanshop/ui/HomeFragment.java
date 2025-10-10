@@ -1,118 +1,264 @@
 package com.example.onlyfanshop.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.onlyfanshop.ViewModel.MainViewModel;
+import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.adapter.BannerAdapter;
 import com.example.onlyfanshop.adapter.PopularAdapter;
-import com.example.onlyfanshop.databinding.FragmentHomeBinding;
+import com.example.onlyfanshop.api.ApiClient;
+import com.example.onlyfanshop.api.ProductApi;
+import com.example.onlyfanshop.api.ProfileApi;
 import com.example.onlyfanshop.model.BannerModel;
+import com.example.onlyfanshop.model.ProductDTO;
+import com.example.onlyfanshop.model.User;
+import com.example.onlyfanshop.model.response.ApiResponse;
+import com.example.onlyfanshop.model.response.HomePageData;
+import com.example.onlyfanshop.model.response.UserResponse;
+import com.example.onlyfanshop.ui.product.ProductDetailActivity;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
-    private FragmentHomeBinding binding;
-    private MainViewModel viewModel;
+    private static final String TAG = "HomeFragment";
+
+    // URL instance của Realtime Database
+    private static final String DB_URL = "https://onlyfan-f9406-default-rtdb.asia-southeast1.firebasedatabase.app";
+    // Tên node (phân biệt hoa/thường)
+    private static final String BANNER_NODE = "Banner";
+
+    // Banner
+    private ViewPager2 viewPagerBanner;
+    private ProgressBar progressBarBanner;
+    private BannerAdapter bannerAdapter;
     private final Handler sliderHandler = new Handler();
+    private static final long SLIDER_INTERVAL_MS = 3000L;
+
+    // Popular
+    private RecyclerView popularView;
+    private ProgressBar progressBarPopular;
+    private PopularAdapter popularAdapter;
+    private ProductApi productApi;
+
+    // Welcome
+    private TextView tvUserName;
 
     private final Runnable sliderRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (binding != null) {
-                int currentItem = binding.viewPagerBanner.getCurrentItem();
-                binding.viewPagerBanner.setCurrentItem(currentItem + 1);
-            }
+        @Override public void run() {
+            if (!isAdded() || viewPagerBanner == null || bannerAdapter == null) return;
+            int count = bannerAdapter.getItemCount();
+            if (count <= 1) return;
+            int next = viewPagerBanner.getCurrentItem() + 1;
+            if (next >= count) next = 0;
+            viewPagerBanner.setCurrentItem(next, true);
+            sliderHandler.postDelayed(this, SLIDER_INTERVAL_MS);
         }
     };
 
     @Nullable
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
-        viewModel = new MainViewModel();
-        initBanner();
-        initPopular();
-        return binding.getRoot();
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    private void initPopular() {
-        binding.progressBarPopular.setVisibility(View.VISIBLE);
-        viewModel.loadPopular().observe(getViewLifecycleOwner(), itemsModels -> {
-            if (itemsModels != null && !itemsModels.isEmpty()) {
-                binding.popularView.setLayoutManager(
-                        new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-                );
-                binding.popularView.setAdapter(new PopularAdapter(itemsModels));
-                binding.popularView.setNestedScrollingEnabled(true);
-            }
-            binding.progressBarPopular.setVisibility(View.GONE);
-        });
-        viewModel.loadPopular();
-    }
+    @Override
+    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
 
-    private void banner(ArrayList<BannerModel> bannerModels) {
-        binding.viewPagerBanner.setAdapter(new BannerAdapter(bannerModels, binding.viewPagerBanner));
-        binding.viewPagerBanner.setClipToPadding(false);
-        binding.viewPagerBanner.setClipChildren(false);
-        binding.viewPagerBanner.setOffscreenPageLimit(3);
-        binding.viewPagerBanner.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
+        // Welcome
+        tvUserName = v.findViewById(R.id.tvUserName);
 
-        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-        compositePageTransformer.addTransformer(new MarginPageTransformer(40));
-        binding.viewPagerBanner.setPageTransformer(compositePageTransformer);
+        // Banner
+        viewPagerBanner = v.findViewById(R.id.viewPagerBanner);
+        progressBarBanner = v.findViewById(R.id.progressBarBanner);
 
-        binding.viewPagerBanner.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
+        bannerAdapter = new BannerAdapter(new ArrayList<>(), viewPagerBanner);
+        viewPagerBanner.setAdapter(bannerAdapter);
+
+        viewPagerBanner.setClipToPadding(false);
+        viewPagerBanner.setClipChildren(false);
+        viewPagerBanner.setOffscreenPageLimit(3);
+        CompositePageTransformer composite = new CompositePageTransformer();
+        composite.addTransformer(new MarginPageTransformer(40));
+        viewPagerBanner.setPageTransformer(composite);
+
+        viewPagerBanner.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override public void onPageSelected(int position) {
                 sliderHandler.removeCallbacks(sliderRunnable);
-                sliderHandler.postDelayed(sliderRunnable, 3000);
+                sliderHandler.postDelayed(sliderRunnable, SLIDER_INTERVAL_MS);
             }
+        });
+
+        // Load banner từ Realtime Database
+        loadBannersFromRealtimeDb();
+
+        // Popular
+        popularView = v.findViewById(R.id.popularView);
+        progressBarPopular = v.findViewById(R.id.progressBarPopular);
+
+        popularView.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
+        popularView.setNestedScrollingEnabled(false);
+
+        popularAdapter = new PopularAdapter(item -> {
+            Intent intent = new Intent(requireContext(), ProductDetailActivity.class);
+            intent.putExtra(ProductDetailActivity.EXTRA_PRODUCT_ID, item.getProductID());
+            startActivity(intent);
+        });
+        popularView.setAdapter(popularAdapter);
+
+        productApi = ApiClient.getPrivateClient(requireContext()).create(ProductApi.class);
+        loadPopular();
+
+        // Lấy tên user cho phần Welcome
+        fetchUserName();
+    }
+
+    // -------- Banner từ Realtime Database --------
+    private void setBannerLoading(boolean loading) {
+        if (progressBarBanner != null) progressBarBanner.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void loadBannersFromRealtimeDb() {
+        setBannerLoading(true);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance(DB_URL)
+                .getReference()
+                .child(BANNER_NODE);
+
+        ref.get().addOnSuccessListener(snapshot -> {
+            ArrayList<BannerModel> banners = new ArrayList<>();
+            for (DataSnapshot child : snapshot.getChildren()) {
+                String url;
+                if (child.hasChild("url")) {
+                    url = child.child("url").getValue(String.class);
+                } else {
+                    url = child.getValue(String.class);
+                }
+                if (url != null && !url.isEmpty()) {
+                    BannerModel m = new BannerModel();
+                    m.setUrl(url);
+                    banners.add(m);
+                }
+            }
+            bannerAdapter.submit(banners);
+            setBannerLoading(false);
+            if (!banners.isEmpty()) startAutoSlide();
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Realtime DB load failed at node '" + BANNER_NODE + "'", e);
+            bannerAdapter.submit(new ArrayList<>());
+            setBannerLoading(false);
         });
     }
 
-    private void initBanner() {
-        binding.progressBarBanner.setVisibility(View.VISIBLE);
-        viewModel.loadBanner().observe(getViewLifecycleOwner(), bannerModels -> {
-            if (bannerModels != null && !bannerModels.isEmpty()) {
-                banner(bannerModels);
-            }
-            binding.progressBarBanner.setVisibility(View.GONE);
-        });
+    private void startAutoSlide() {
+        sliderHandler.removeCallbacks(sliderRunnable);
+        sliderHandler.postDelayed(sliderRunnable, SLIDER_INTERVAL_MS);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
+    private void stopAutoSlide() {
         sliderHandler.removeCallbacks(sliderRunnable);
     }
 
-    @Override
-    public void onResume() {
+    @Override public void onResume() {
         super.onResume();
-        sliderHandler.postDelayed(sliderRunnable, 3000);
+        startAutoSlide();
     }
 
-    @Override
-    public void onDestroyView() {
+    @Override public void onPause() {
+        stopAutoSlide();
+        super.onPause();
+    }
+
+    @Override public void onDestroyView() {
+        stopAutoSlide();
         super.onDestroyView();
-        sliderHandler.removeCallbacks(sliderRunnable);
-        binding = null;
+    }
+
+    // ---------------- Popular ----------------
+    private void setPopularLoading(boolean loading) {
+        if (progressBarPopular != null) {
+            progressBarPopular.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void loadPopular() {
+        setPopularLoading(true);
+        productApi.getHomePagePost(1, 10, "ProductID", "DESC", null, null, null)
+                .enqueue(new Callback<ApiResponse<HomePageData>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse<HomePageData>> call,
+                                           @NonNull Response<ApiResponse<HomePageData>> response) {
+                        setPopularLoading(false);
+                        List<ProductDTO> products = new ArrayList<>();
+                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                            if (response.body().getData().products != null) {
+                                products = response.body().getData().products;
+                            }
+                        }
+                        popularAdapter.submitList(products);
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse<HomePageData>> call, @NonNull Throwable t) {
+                        setPopularLoading(false);
+                        popularAdapter.submitList(new ArrayList<>());
+                    }
+                });
+    }
+
+    // ---------------- Welcome username ----------------
+    private void fetchUserName() {
+        ProfileApi profileApi = ApiClient.getPrivateClient(requireContext()).create(ProfileApi.class);
+        profileApi.getUser().enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<UserResponse> call, @NonNull Response<UserResponse> response) {
+                if (!isAdded()) return;
+
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    User user = response.body().getData();
+                    String name = user.getUsername();
+                    if (name == null || name.trim().isEmpty()) name = "Guest";
+                    tvUserName.setText(name);
+                } else if (response.code() == 401) {
+                    Log.w(TAG, "Unauthorized. Token may be invalid/expired.");
+                    // TODO: Điều hướng Login nếu cần
+                } else {
+                    Log.w(TAG, "getUser failed: code=" + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Log.e(TAG, "getUser error", t);
+            }
+        });
     }
 }

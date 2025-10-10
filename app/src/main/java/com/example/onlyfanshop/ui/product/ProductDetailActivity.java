@@ -1,5 +1,6 @@
 package com.example.onlyfanshop.ui.product;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -40,6 +41,14 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private boolean isFavorite = false;
 
+    // THÊM: Factory method tạo Intent mở màn chi tiết
+    public static Intent newIntent(Context context, int productId) {
+        Intent intent = new Intent(context, ProductDetailActivity.class);
+        intent.putExtra(EXTRA_PRODUCT_ID, productId);
+        return intent;
+    }
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,20 +67,19 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnAddToCart = findViewById(R.id.btnAddToCart);
         progressBar = findViewById(R.id.progressBar);
 
-
-
         findViewById(R.id.btnFavorite).setOnClickListener(v -> toggleFavorite());
 
         int id = getIntent().getIntExtra(EXTRA_PRODUCT_ID, -1);
         btnAddToCart.setOnClickListener(v -> addTocart(id));
         if (id > 0) {
             fetchDetail(id);
+        } else {
+            Toast.makeText(this, "Product ID không hợp lệ", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
     private void testPayment() {
-        // Giả sử bạn lấy giá từ TextView hoặc một biến thành viên đã lưu giá sản phẩm
-        // Ví dụ: lấy giá từ textBottomPrice
         String priceString = textBottomPrice.getText().toString().replace("$", "");
         double amount;
         try {
@@ -81,9 +89,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // Mã ngân hàng để test, bạn có thể thay đổi hoặc cho người dùng chọn
         String bankCode = "NCB";
-
         Log.d("Payment", "Creating payment with amount: " + amount + " and bankCode: " + bankCode);
         showLoading(true);
 
@@ -93,18 +99,13 @@ public class ProductDetailActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse<PaymentDTO>> call, Response<ApiResponse<PaymentDTO>> response) {
                 showLoading(false);
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
-                    // Xử lý khi gọi API thành công, ví dụ: mở URL thanh toán
-                    String paymentUrl = response.body().getData().getPaymentUrl(); // Giả sử response có trường 'url'
+                    String paymentUrl = response.body().getData().getPaymentUrl();
                     Log.d("Payment", "Payment URL: " + paymentUrl);
                     Toast.makeText(ProductDetailActivity.this, "Redirecting to payment...", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(ProductDetailActivity.this, PaymentWebViewActivity.class);
                     intent.putExtra(PaymentWebViewActivity.EXTRA_URL, paymentUrl);
                     startActivity(intent);
-                    // Mở URL thanh toán bằng trình duyệt
-                    // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
-                    // startActivity(browserIntent);
                 } else {
-                    // Xử lý khi có lỗi từ server
                     Log.e("Payment", "API call failed with response code: " + response.code());
                     Toast.makeText(ProductDetailActivity.this, "Failed to create payment.", Toast.LENGTH_SHORT).show();
                 }
@@ -113,7 +114,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<PaymentDTO>> call, Throwable t) {
                 showLoading(false);
-                // Xử lý khi có lỗi mạng
                 Log.e("Payment", "Network error: " + t.getMessage(), t);
                 Toast.makeText(ProductDetailActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -142,7 +142,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
     }
 
-
     private void fetchDetail(int id) {
         Log.d("ProductDetail", "Fetching product detail for ID: " + id);
         showLoading(true);
@@ -153,12 +152,11 @@ public class ProductDetailActivity extends AppCompatActivity {
                 showLoading(false);
                 Log.d("ProductDetail", "Response code: " + response.code());
                 Log.d("ProductDetail", "Response body: " + response.body());
-                
+
                 if (response.isSuccessful() && response.body() != null) {
                     ProductDetailDTO d = response.body().getData();
                     Log.d("ProductDetail", "Product data: " + d);
                     if (d == null) {
-
                         Log.e("ProductDetail", "Product data is null");
                         Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
                         return;
@@ -186,7 +184,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         textBrief.setText(product.getBriefDescription() != null ? product.getBriefDescription() : "");
         textFull.setText(product.getFullDescription() != null ? product.getFullDescription() : "");
         textSpecs.setText(product.getTechnicalSpecifications() != null ? product.getTechnicalSpecifications() : "");
-        
+
         if (product.getImageURL() != null && !product.getImageURL().isEmpty()) {
             Glide.with(ProductDetailActivity.this)
                     .load(product.getImageURL())
@@ -209,5 +207,3 @@ public class ProductDetailActivity extends AppCompatActivity {
         // TODO: Optionally call backend to persist favorite state
     }
 }
-
-

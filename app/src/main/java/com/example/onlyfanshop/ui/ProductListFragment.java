@@ -1,196 +1,157 @@
 package com.example.onlyfanshop.ui;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.adapter.ProductAdapter;
-import com.example.onlyfanshop.model.ItemsModel;
-import com.example.onlyfanshop.repository.MainRepository;
+import com.example.onlyfanshop.api.ApiClient;
+import com.example.onlyfanshop.api.ProductApi;
+import com.example.onlyfanshop.model.ProductDTO;
+import com.example.onlyfanshop.model.response.ApiResponse;
+import com.example.onlyfanshop.model.response.HomePageData;
+import com.example.onlyfanshop.ViewModel.ProductFilterViewModel;
+// IMPORTANT: import the detail activity from its package
+import com.example.onlyfanshop.ui.product.ProductDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Hiển thị danh sách sản phẩm thuộc một danh mục.
- * Lưu ý: MainRepository hiện chỉ có loadPopular() (lấy toàn bộ Items),
- * nên fragment này tự lọc theo categoryName.
- */
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ProductListFragment extends Fragment {
 
-    private static final String ARG_CATEGORY_NAME = "arg_category_name";
+    private SwipeRefreshLayout swipeRefresh;
+    private RecyclerView recyclerProducts;
+    private ProgressBar progressProducts;
+    private TextView textEmptyProducts;
 
-    // Danh mục cần hiển thị
-    private String categoryName;
+    private ProductAdapter productAdapter;
+    private ProductApi productApi;
+    private ProductFilterViewModel filterVM;
 
-    // UI
-    private RecyclerView recycler;
-    private ProgressBar progress;
-    private TextView empty;
-    private SwipeRefreshLayout swipe;
-
-    // Adapter & dữ liệu
-    private ProductAdapter adapter;
-    private final List<ItemsModel> allItemsCache = new ArrayList<>(); // cache tất cả (từ Firebase)
-    private final List<ItemsModel> filtered = new ArrayList<>();
-
-    // Repository
-    private final MainRepository repo = new MainRepository();
-    private LiveData<ArrayList<ItemsModel>> liveDataSource;
-
-    // Handler cho refresh giả lập (trong trường hợp user kéo nhưng data đã realtime)
-    private final Handler handler = new Handler(Looper.getMainLooper());
-
-    public static ProductListFragment newInstance(String categoryName) {
-        ProductListFragment f = new ProductListFragment();
-        Bundle b = new Bundle();
-        b.putString(ARG_CATEGORY_NAME, categoryName);
-        f.setArguments(b);
-        return f;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        categoryName = getArguments() != null ? getArguments().getString(ARG_CATEGORY_NAME) : null;
-    }
+    @Nullable
+    private String currentKeyword;
+    @Nullable
+    private Integer currentCategoryId;
 
     @Nullable
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
-        View v = inflater.inflate(R.layout.fragment_product_list, container, false);
-        bindViews(v);
-        setupRecycler();
-        setupSwipeRefresh();
-        loadDataIfNeeded();
-        return v;
-    }
-
-    private void bindViews(View v) {
-        recycler = v.findViewById(R.id.recyclerProducts);
-        progress = v.findViewById(R.id.progressProducts);
-        empty = v.findViewById(R.id.textEmptyProducts);
-        swipe = v.findViewById(R.id.swipeRefreshProducts);
-    }
-
-    private void setupRecycler() {
-        adapter = new ProductAdapter(model -> {
-            // TODO: mở màn hình chi tiết sản phẩm sau này
-            // Ví dụ:
-            // startActivity(new Intent(requireContext(), ProductDetailActivity.class)
-            //        .putExtra("item", model));
-        });
-        recycler.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-        recycler.setAdapter(adapter);
-    }
-
-    private void setupSwipeRefresh() {
-        swipe.setOnRefreshListener(() -> {
-            // Vì loadPopular() dùng ValueEventListener realtime, dữ liệu sẽ tự cập nhật.
-            // Ở đây chỉ tái áp dụng filter & tắt hiệu ứng sau một chút.
-            applyFilter();
-            handler.postDelayed(() -> {
-                if (swipe != null) swipe.setRefreshing(false);
-            }, 600);
-        });
-    }
-
-    private void loadDataIfNeeded() {
-        if (categoryName == null || categoryName.trim().isEmpty()) {
-            showEmpty("Không có danh mục");
-            return;
-        }
-        showLoading(true);
-
-        // Chỉ đăng ký observer một lần
-        if (liveDataSource == null) {
-            liveDataSource = repo.loadPopular();
-            liveDataSource.observe(getViewLifecycleOwner(), items -> {
-                if (items == null) {
-                    showEmpty("Không có sản phẩm");
-                    return;
-                }
-                allItemsCache.clear();
-                allItemsCache.addAll(items);
-                applyFilter();
-            });
-        } else {
-            // Nếu đã có live data (quay lại fragment), chỉ cần áp lại filter
-            applyFilter();
-        }
-    }
-
-    /**
-     * Lọc danh sách theo categoryName (case-insensitive).
-     */
-    private void applyFilter() {
-        filtered.clear();
-        if (!TextUtils.isEmpty(categoryName)) {
-            for (ItemsModel m : allItemsCache) {
-                if (m.getCategory() != null &&
-                        m.getCategory().equalsIgnoreCase(categoryName)) {
-                    filtered.add(m);
-                }
-            }
-        }
-        renderFiltered();
-    }
-
-    private void renderFiltered() {
-        showLoading(false);
-        if (filtered.isEmpty()) {
-            adapter.setData(new ArrayList<>());
-            showEmpty("Không có sản phẩm");
-        } else {
-            hideEmpty();
-            adapter.setData(filtered);
-        }
-    }
-
-    private void showLoading(boolean loading) {
-        if (progress != null) {
-            progress.setVisibility(loading ? View.VISIBLE : View.GONE);
-        }
-    }
-
-    private void showEmpty(String msg) {
-        showLoading(false);
-        if (empty != null) {
-            empty.setText(msg);
-            empty.setVisibility(View.VISIBLE);
-        }
-        if (recycler != null) {
-            recycler.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    private void hideEmpty() {
-        if (empty != null) empty.setVisibility(View.GONE);
-        if (recycler != null) recycler.setVisibility(View.VISIBLE);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_product_list, container, false);
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        handler.removeCallbacksAndMessages(null);
+    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
+
+        swipeRefresh = v.findViewById(R.id.swipeRefreshProducts);
+        recyclerProducts = v.findViewById(R.id.recyclerProducts);
+        progressProducts = v.findViewById(R.id.progressProducts);
+        textEmptyProducts = v.findViewById(R.id.textEmptyProducts);
+
+        setupRecycler();
+        setupSwipe();
+
+        productApi = ApiClient.getPrivateClient(requireContext()).create(ProductApi.class);
+        filterVM = new ViewModelProvider(requireActivity()).get(ProductFilterViewModel.class);
+
+        filterVM.getKeyword().observe(getViewLifecycleOwner(), kw -> {
+            currentKeyword = kw;
+            fetchProducts();
+        });
+        filterVM.getCategoryId().observe(getViewLifecycleOwner(), cid -> {
+            currentCategoryId = cid;
+            fetchProducts();
+        });
+
+        fetchProducts();
+    }
+
+    private void setupRecycler() {
+        productAdapter = new ProductAdapter(item -> {
+            Integer pid = item.getProductID();
+            if (pid == null || pid <= 0) {
+                Toast.makeText(requireContext(), "Product ID không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            startActivity(ProductDetailActivity.newIntent(requireContext(), pid));
+            // Alternatively (no import needed):
+            // startActivity(com.example.onlyfanshop.ui.product.ProductDetailActivity.newIntent(requireContext(), pid));
+        });
+        recyclerProducts.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        recyclerProducts.setAdapter(productAdapter);
+    }
+
+    private void setupSwipe() {
+        swipeRefresh.setOnRefreshListener(this::fetchProducts);
+    }
+
+    private void setLoading(boolean loading) {
+        if (loading) {
+            progressProducts.setVisibility(View.VISIBLE);
+            textEmptyProducts.setVisibility(View.GONE);
+        } else {
+            progressProducts.setVisibility(View.GONE);
+        }
+    }
+
+    private void fetchProducts() {
+        if (productApi == null) return;
+        setLoading(true);
+
+        Call<ApiResponse<HomePageData>> call = productApi.getHomePagePost(
+                1,
+                20,
+                "ProductID",
+                "DESC",
+                currentKeyword,
+                currentCategoryId,
+                null
+        );
+
+        call.enqueue(new Callback<ApiResponse<HomePageData>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<HomePageData>> call,
+                                   @NonNull Response<ApiResponse<HomePageData>> response) {
+                swipeRefresh.setRefreshing(false);
+                setLoading(false);
+
+                List<ProductDTO> products = new ArrayList<>();
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    if (response.body().getData().products != null) {
+                        products = response.body().getData().products;
+                    }
+                }
+
+                productAdapter.submitList(products);
+                textEmptyProducts.setVisibility(products.isEmpty() ? View.VISIBLE : View.GONE);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<HomePageData>> call, @NonNull Throwable t) {
+                swipeRefresh.setRefreshing(false);
+                setLoading(false);
+                productAdapter.submitList(new ArrayList<>());
+                textEmptyProducts.setVisibility(View.VISIBLE);
+            }
+        });
     }
 }

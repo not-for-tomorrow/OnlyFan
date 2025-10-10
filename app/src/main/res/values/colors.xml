@@ -17,5 +17,8 @@
     <color name="navRipple">#22000000</color>
 
     <color name="toolbarBg">#FFFFFFFF</color>
-
+    <color name="nav_selected">#5B54F3</color>
+    <color name="nav_unselected">#9E9E9E</color>
+    <color name="nav_background">#FFFFFF</color>
+    <color name="app_background">#F5F5F5</color>
 </resources>
