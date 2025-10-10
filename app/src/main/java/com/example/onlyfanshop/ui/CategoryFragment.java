@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,6 +30,7 @@ import com.example.onlyfanshop.model.CategoryDTO;
 import com.example.onlyfanshop.model.ProductDTO;
 import com.example.onlyfanshop.model.response.ApiResponse;
 import com.example.onlyfanshop.model.response.HomePageData;
+import com.example.onlyfanshop.ui.product.ProductDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,7 @@ public class CategoryFragment extends Fragment {
     private RecyclerView categoryView;
     private ProgressBar progressBarCategory;
 
-    // Views cho danh sách sản phẩm (đã có trong fragment_category của bạn)
+    // Views cho danh sách sản phẩm
     private RecyclerView recyclerSearchResult;
     private ProgressBar progressSearch;
     private TextView textEmptySearch;
@@ -87,7 +89,6 @@ public class CategoryFragment extends Fragment {
         productApi = ApiClient.getPrivateClient(requireContext()).create(ProductApi.class);
 
         setupSearch();
-        // Lần đầu: show tất cả sản phẩm (keyword=null, categoryId=null)
         fetchHomePage();
     }
 
@@ -104,7 +105,12 @@ public class CategoryFragment extends Fragment {
 
     private void setupProductRecycler() {
         productAdapter = new ProductAdapter(item -> {
-            // TODO: mở màn chi tiết nếu có
+            Integer pid = item.getProductID();
+            if (pid == null || pid <= 0) {
+                Toast.makeText(requireContext(), "Product ID không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            startActivity(ProductDetailActivity.newIntent(requireContext(), pid));
         });
         recyclerSearchResult.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         recyclerSearchResult.setAdapter(productAdapter);
