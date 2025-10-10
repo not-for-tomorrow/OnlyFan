@@ -157,6 +157,7 @@ public class LoginActivity extends AppCompatActivity {
                         sharedPreferences.edit().putString("role", user.getRole()).apply();
                         sharedPreferences.edit().putString("authProvider", user.getAuthProvider()).apply();
                         sharedPreferences.edit().putInt("usedId", user.getUserID()).apply();
+                        sharedPreferences.edit().putString("address", user.getAddress()).apply();
 
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("user", user);

@@ -30,11 +30,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewholder
     private Context context;
     private List<CartItemDTO> cartItems;
     private OnQuantityChangeListener listener;
+    private boolean cartView;
 
-    public CartAdapter(Context context,List<CartItemDTO> cartItems) {
+    public CartAdapter(Context context,List<CartItemDTO> cartItems,boolean cartView) {
         this.context = context;
 
         this.cartItems = cartItems;
+        this.cartView = cartView;
     }
     public void setOnQuantityChangeListener(OnQuantityChangeListener listener) {
         this.listener = listener;
@@ -63,6 +65,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewholder
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .error(R.drawable.ic_launcher_foreground)
                     .into(holder.binding.pic);
+        }
+        if(!cartView){
+            holder.binding.addQuantity.setVisibility(View.GONE);
+            holder.binding.minusQuantity.setVisibility(View.GONE);
+            holder.binding.feeEach.setVisibility(View.GONE);
         }
 
         holder.binding.addQuantity.setOnClickListener(v -> {

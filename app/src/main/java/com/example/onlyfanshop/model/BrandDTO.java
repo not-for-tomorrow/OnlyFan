@@ -2,7 +2,9 @@ package com.example.onlyfanshop.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class BrandDTO {
+import java.io.Serializable;
+
+public class BrandDTO implements Serializable {
     // Backend trả "brandID" (int32) -> để an toàn có thể nhận cả "id"
     @SerializedName(value = "brandID", alternate = {"id"})
     private Long brandID;

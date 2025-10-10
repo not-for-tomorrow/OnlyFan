@@ -87,8 +87,8 @@ public class MainActivity extends AppCompatActivity {
 
         btnViewProduct.setOnClickListener(v -> openProductDetail());
         btnViewCart.setOnClickListener(v -> {
-            assert user != null;
-            viewCart(user.getUsername());
+            if( user != null){
+            viewCart(user.getUsername());}
         });
         btnLogout.setOnClickListener(v -> logout());
 

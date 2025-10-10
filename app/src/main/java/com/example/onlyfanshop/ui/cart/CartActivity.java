@@ -1,5 +1,6 @@
 package com.example.onlyfanshop.ui.cart;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,8 +21,10 @@ import com.example.onlyfanshop.databinding.ActivityCartBinding;
 import com.example.onlyfanshop.model.CartItemDTO;
 import com.example.onlyfanshop.model.ProductDetailDTO;
 import com.example.onlyfanshop.model.response.ApiResponse;
+import com.example.onlyfanshop.ui.payment.ConfirmPaymentActivity;
 import com.example.onlyfanshop.ui.product.ProductDetailActivity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +36,7 @@ public class CartActivity extends AppCompatActivity {
     private CartAdapter cartAdapter;
     private ActivityCartBinding binding;
     private List<CartItemDTO> cartItems;
+    private double totalPrice=0;
     private String USERNAME;
 
     @Override
@@ -43,8 +47,7 @@ public class CartActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         binding.rclViewCart.setLayoutManager(new LinearLayoutManager(this));
         USERNAME = getIntent().getStringExtra("username");
-        //recyclerViewCartItem.setLayoutManager(new LinearLayoutManager(this));
-        cartAdapter = new CartAdapter(this, cartItems);
+        cartAdapter = new CartAdapter(this, cartItems, true);
         binding.rclViewCart.setAdapter(cartAdapter);
         cartAdapter.setOnQuantityChangeListener(new CartAdapter.OnQuantityChangeListener() {
             @Override
@@ -57,8 +60,16 @@ public class CartActivity extends AppCompatActivity {
             }
         });
         getCartItems(USERNAME, cartAdapter);
+        binding.checkoutBtn.setOnClickListener(v->confirmCheckout());
         binding.backBtn.setOnClickListener(v -> finish());
 
+    }
+
+    private void confirmCheckout() {
+        Intent intent = new Intent(CartActivity.this, ConfirmPaymentActivity.class);
+        intent.putExtra("totalPrice", totalPrice);
+        intent.putExtra("cartItems",(Serializable) cartItems);
+        startActivity(intent);
     }
 
     private void getCartItems(String username, CartAdapter cartAdapter) {
@@ -75,7 +86,7 @@ public class CartActivity extends AppCompatActivity {
 
                         Toast.makeText(CartActivity.this, "Không có dữ liệu giỏ hàng", Toast.LENGTH_SHORT).show();
                     } else {
-                        double totalPrice =0;
+                         totalPrice =0;
                         cartItems = new ArrayList<>();
                         cartItems.addAll(list);
                         cartAdapter.setData(cartItems);
