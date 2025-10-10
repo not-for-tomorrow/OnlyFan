@@ -3,6 +3,7 @@ package com.example.onlyfanshop.ui.cart;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -90,6 +91,10 @@ public class CartActivity extends AppCompatActivity {
                         cartItems = new ArrayList<>();
                         cartItems.addAll(list);
                         cartAdapter.setData(cartItems);
+                        if(cartAdapter.getItemCount()==0){
+                            binding.textEmpty.setVisibility(View.VISIBLE);
+                            binding.checkoutBtn.setVisibility(View.GONE);
+                        }
                         for (CartItemDTO item : cartItems) {
                             totalPrice += item.getPrice();
                         }
