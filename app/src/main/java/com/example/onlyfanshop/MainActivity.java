@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         btnOpenTestChat.setOnClickListener(v -> {
-            Intent i = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.TestChatActivity.class);
+            Intent i = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.ChatListActivity.class);
             startActivity(i);
         });
     }

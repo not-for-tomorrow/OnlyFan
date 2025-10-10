@@ -28,12 +28,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return new MessageViewHolder(view);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
-        ChatMessage message = messages.get(position);
-        holder.userNameTextView.setText(message.getMessageUser());
-        holder.messageTextView.setText(message.getMessageText());
-    }
+    // onBindViewHolder implemented below (bubble binding)
 
     @Override
     public int getItemCount() {
@@ -41,13 +36,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
-        TextView userNameTextView;
-        TextView messageTextView;
+        ViewGroup containerIncoming, containerOutgoing;
+        TextView tvIncoming, tvOutgoing;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
-            userNameTextView = itemView.findViewById(R.id.userNameTextView);
-            messageTextView = itemView.findViewById(R.id.messageTextView);
+            containerIncoming = itemView.findViewById(R.id.containerIncoming);
+            containerOutgoing = itemView.findViewById(R.id.containerOutgoing);
+            tvIncoming = itemView.findViewById(R.id.tvIncoming);
+            tvOutgoing = itemView.findViewById(R.id.tvOutgoing);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
+        ChatMessage message = messages.get(position);
+        boolean isMine = "User1".equals(message.getMessageUser());
+        holder.containerIncoming.setVisibility(isMine ? View.GONE : View.VISIBLE);
+        holder.containerOutgoing.setVisibility(isMine ? View.VISIBLE : View.GONE);
+        if (isMine) {
+            holder.tvOutgoing.setText(message.getMessageText());
+        } else {
+            holder.tvIncoming.setText(message.getMessageText());
         }
     }
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_reaction_bar"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp">
+
+    <TextView android:id="@+id/r1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="❤️" android:textSize="22sp" android:padding="6dp"/>
+    <TextView android:id="@+id/r2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😂" android:textSize="22sp" android:padding="6dp"/>
+    <TextView android:id="@+id/r3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😮" android:textSize="22sp" android:padding="6dp"/>
+    <TextView android:id="@+id/r4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😢" android:textSize="22sp" android:padding="6dp"/>
+    <TextView android:id="@+id/r5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😡" android:textSize="22sp" android:padding="6dp"/>
+    <TextView android:id="@+id/r6" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="👍" android:textSize="22sp" android:padding="6dp"/>
+    <TextView android:id="@+id/r7" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="＋" android:textSize="20sp" android:padding="6dp"/>
+
+</LinearLayout>
+
