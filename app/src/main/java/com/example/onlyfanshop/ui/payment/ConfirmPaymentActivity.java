@@ -50,6 +50,5 @@ public class ConfirmPaymentActivity extends AppCompatActivity {
 
             }
         });
-
     }
 }
