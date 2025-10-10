@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">OnlyFanshop</string>
-    <string name="search">Tìm kiếm...</string>
+    <string name="category">Category</string>
     <string name="_0">0VND</string>
     <string name="productTotal">Tổng giá trị sản phẩm</string>
     <string name="deliveryCost">Phí vận chuyển</string>
@@ -17,15 +17,15 @@
     <string name="let_s_get_started">Let\'s Get Started</string>
     <string name="uilover">UILover</string>
     <string name="already_have_an_account_signin">Already have an account? <font color="#3DDC84">Sign In</font></string>
-    <string name="t_i_kho_n">Tài khoản</string>
-    <string name="y_u_th_ch">Yêu thích</string>
+    <string name="cart">Cart</string>
     <string name="danh_m_c">Danh mục</string>
     <string name="home">Home</string>
     <string name="admin_uid">ADMIN_UID_PLACEHOLDER</string>
     <string name="sold_format">Đã bán %1$d</string>
+    <string name="search">Search</string>
 
     <!-- New strings -->
-    <string name="chats">Chats</string>
+    <string name="history">History</string>
     <string name="favorites">Favorites</string>
     <string name="profile">Profile</string>
 </resources>

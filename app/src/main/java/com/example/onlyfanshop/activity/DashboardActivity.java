@@ -121,10 +121,10 @@ public class DashboardActivity extends AppCompatActivity {
         } else if (id == R.id.nav_search) {
             fragment = new CategoryFragment();
             tag = "SEARCH";
-        } else if (id == R.id.nav_fav) {
+        } else if (id == R.id.nav_car) {
             fragment = new MapFragment();
             tag = "FAVORITES";
-        } else if (id == R.id.nav_chat) {
+        } else if (id == R.id.nav_his) {
             fragment = PlaceholderFragment.newInstance("Chat", "💬");
             tag = "CHAT";
         } else if (id == R.id.nav_profile) {

@@ -41,15 +41,14 @@
                     android:id="@+id/tvWelcome"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Welcome Back"
                     android:textColor="@color/black"
-                    android:textSize="13sp" />
+                    android:textSize="10sp" />
 
                 <TextView
                     android:id="@+id/tvUserName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Charles"
+                    android:text="Name"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
