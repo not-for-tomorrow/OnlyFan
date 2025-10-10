@@ -7,17 +7,17 @@
     <item
         android:id="@+id/nav_search"
         android:icon="@drawable/ic_search"
-        android:title="@string/search" />
+        android:title="@string/category" />
     <item
-        android:id="@+id/nav_fav"
-        android:icon="@drawable/ic_favorites"
-        android:title="@string/y_u_th_ch" />
+        android:id="@+id/nav_car"
+        android:icon="@drawable/shopping_cart_outline_svgrepo_com"
+        android:title="@string/cart" />
     <item
-        android:id="@+id/nav_chat"
-        android:icon="@drawable/ic_chat"
-        android:title="@string/chats" />
+        android:id="@+id/nav_his"
+        android:icon="@drawable/history_icon_black"
+        android:title="@string/history" />
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_profile"
-        android:title="@string/t_i_kho_n" />
+        android:title="@string/profile" />
 </menu>
