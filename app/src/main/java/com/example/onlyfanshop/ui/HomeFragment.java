@@ -3,10 +3,13 @@ package com.example.onlyfanshop.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -22,6 +25,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.onlyfanshop.R;
 import com.example.onlyfanshop.adapter.BannerAdapter;
 import com.example.onlyfanshop.adapter.PopularAdapter;
+import com.example.onlyfanshop.adapter.SearchSuggestionAdapter;
 import com.example.onlyfanshop.api.ApiClient;
 import com.example.onlyfanshop.api.ProductApi;
 import com.example.onlyfanshop.api.ProfileApi;
@@ -33,7 +37,6 @@ import com.example.onlyfanshop.model.response.HomePageData;
 import com.example.onlyfanshop.model.response.UserResponse;
 import com.example.onlyfanshop.ui.product.ProductDetailActivity;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
@@ -47,9 +50,7 @@ public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
 
-    // URL instance của Realtime Database
     private static final String DB_URL = "https://onlyfan-f9406-default-rtdb.asia-southeast1.firebasedatabase.app";
-    // Tên node (phân biệt hoa/thường)
     private static final String BANNER_NODE = "Banner";
 
     // Banner
@@ -67,6 +68,20 @@ public class HomeFragment extends Fragment {
 
     // Welcome
     private TextView tvUserName;
+
+    // Search suggestions
+    private EditText etSearch;
+    private RecyclerView recyclerSuggest;
+    private ProgressBar progressSearch;
+    private SearchSuggestionAdapter suggestAdapter;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSearch;
+    private static final long SEARCH_DEBOUNCE_MS = 300L;
+
+    // Số dòng tối đa hiển thị đồng thời
+    private static final int SUGGEST_MAX_ROWS = 5;
+    // Chiều cao mỗi dòng (khớp với row_search_suggestion.xml: 68dp)
+    private static final int SUGGEST_ROW_DP = 68;
 
     private final Runnable sliderRunnable = new Runnable() {
         @Override public void run() {
@@ -136,6 +151,35 @@ public class HomeFragment extends Fragment {
         productApi = ApiClient.getPrivateClient(requireContext()).create(ProductApi.class);
         loadPopular();
 
+        // Search suggestions
+        etSearch = v.findViewById(R.id.editTextText);
+        recyclerSuggest = v.findViewById(R.id.recyclerSearchSuggest);
+        progressSearch = v.findViewById(R.id.progressSearch);
+
+        recyclerSuggest.setLayoutManager(new LinearLayoutManager(requireContext()));
+        // Cho phép cuộn bên trong khi giới hạn chiều cao
+        recyclerSuggest.setNestedScrollingEnabled(true);
+        recyclerSuggest.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+        // Tránh ScrollView chặn cử chỉ cuộn của RecyclerView
+        recyclerSuggest.setOnTouchListener((view, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+                view.getParent().requestDisallowInterceptTouchEvent(true);
+            } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                view.getParent().requestDisallowInterceptTouchEvent(false);
+            }
+            return false;
+        });
+
+        suggestAdapter = new SearchSuggestionAdapter(item -> {
+            Integer pid = item.getProductID();
+            if (pid != null && pid > 0) {
+                startActivity(ProductDetailActivity.newIntent(requireContext(), pid));
+            }
+        });
+        recyclerSuggest.setAdapter(suggestAdapter);
+
+        setupSearch();
+
         // Lấy tên user cho phần Welcome
         fetchUserName();
     }
@@ -148,33 +192,34 @@ public class HomeFragment extends Fragment {
     private void loadBannersFromRealtimeDb() {
         setBannerLoading(true);
 
-        DatabaseReference ref = FirebaseDatabase.getInstance(DB_URL)
+        FirebaseDatabase.getInstance(DB_URL)
                 .getReference()
-                .child(BANNER_NODE);
-
-        ref.get().addOnSuccessListener(snapshot -> {
-            ArrayList<BannerModel> banners = new ArrayList<>();
-            for (DataSnapshot child : snapshot.getChildren()) {
-                String url;
-                if (child.hasChild("url")) {
-                    url = child.child("url").getValue(String.class);
-                } else {
-                    url = child.getValue(String.class);
-                }
-                if (url != null && !url.isEmpty()) {
-                    BannerModel m = new BannerModel();
-                    m.setUrl(url);
-                    banners.add(m);
-                }
-            }
-            bannerAdapter.submit(banners);
-            setBannerLoading(false);
-            if (!banners.isEmpty()) startAutoSlide();
-        }).addOnFailureListener(e -> {
-            Log.e(TAG, "Realtime DB load failed at node '" + BANNER_NODE + "'", e);
-            bannerAdapter.submit(new ArrayList<>());
-            setBannerLoading(false);
-        });
+                .child(BANNER_NODE)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    ArrayList<BannerModel> banners = new ArrayList<>();
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        String url;
+                        if (child.hasChild("url")) {
+                            url = child.child("url").getValue(String.class);
+                        } else {
+                            url = child.getValue(String.class);
+                        }
+                        if (url != null && !url.isEmpty()) {
+                            BannerModel m = new BannerModel();
+                            m.setUrl(url);
+                            banners.add(m);
+                        }
+                    }
+                    bannerAdapter.submit(banners);
+                    setBannerLoading(false);
+                    if (!banners.isEmpty()) startAutoSlide();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Realtime DB load failed at node '" + BANNER_NODE + "'", e);
+                    bannerAdapter.submit(new ArrayList<>());
+                    setBannerLoading(false);
+                });
     }
 
     private void startAutoSlide() {
@@ -198,6 +243,7 @@ public class HomeFragment extends Fragment {
 
     @Override public void onDestroyView() {
         stopAutoSlide();
+        if (pendingSearch != null) searchHandler.removeCallbacks(pendingSearch);
         super.onDestroyView();
     }
 
@@ -233,6 +279,99 @@ public class HomeFragment extends Fragment {
                 });
     }
 
+    // ---------------- Search suggestion ----------------
+    private void setupSearch() {
+        if (etSearch == null) return;
+
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(android.text.Editable s) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (pendingSearch != null) searchHandler.removeCallbacks(pendingSearch);
+                final String key = s.toString().trim();
+
+                // Nếu rỗng thì ẩn gợi ý
+                if (key.isEmpty()) {
+                    suggestAdapter.submitList(new ArrayList<>());
+                    recyclerSuggest.setVisibility(View.GONE);
+                    progressSearch.setVisibility(View.GONE);
+                    // Không cần giữ chiều cao cũ khi ẩn
+                    return;
+                }
+
+                pendingSearch = () -> fetchSuggestions(key);
+                searchHandler.postDelayed(pendingSearch, SEARCH_DEBOUNCE_MS);
+            }
+        });
+    }
+
+    private void setSuggestLoading(boolean loading) {
+        if (progressSearch != null) progressSearch.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (loading) recyclerSuggest.setVisibility(View.GONE);
+    }
+
+    private void fetchSuggestions(String keyword) {
+        if (productApi == null) return;
+        setSuggestLoading(true);
+
+        productApi.getHomePagePost(
+                        1, 20, // có thể trả về >5, ta sẽ giới hạn chiều cao hiển thị
+                        "ProductID", "DESC",
+                        keyword,
+                        null,
+                        null)
+                .enqueue(new Callback<ApiResponse<HomePageData>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse<HomePageData>> call,
+                                           @NonNull Response<ApiResponse<HomePageData>> response) {
+                        setSuggestLoading(false);
+                        if (!isAdded()) return;
+
+                        List<ProductDTO> products = new ArrayList<>();
+                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                            if (response.body().getData().products != null) {
+                                products = response.body().getData().products;
+                            }
+                        }
+                        suggestAdapter.submitList(products);
+                        adjustSuggestionHeight(products.size());
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse<HomePageData>> call,
+                                          @NonNull Throwable t) {
+                        setSuggestLoading(false);
+                        if (!isAdded()) return;
+                        suggestAdapter.submitList(new ArrayList<>());
+                        recyclerSuggest.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    private void adjustSuggestionHeight(int count) {
+        if (recyclerSuggest == null) return;
+
+        if (count <= 0) {
+            recyclerSuggest.setVisibility(View.GONE);
+            return;
+        }
+
+        int rows = Math.min(SUGGEST_MAX_ROWS, count);
+        int itemHeightPx = dpToPx(SUGGEST_ROW_DP);
+        ViewGroup.LayoutParams lp = recyclerSuggest.getLayoutParams();
+        lp.height = itemHeightPx * rows;
+        recyclerSuggest.setLayoutParams(lp);
+        recyclerSuggest.setVisibility(View.VISIBLE);
+    }
+
+    private int dpToPx(int dp) {
+        if (!isAdded()) return dp; // fallback
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
+    }
+
     // ---------------- Welcome username ----------------
     private void fetchUserName() {
         ProfileApi profileApi = ApiClient.getPrivateClient(requireContext()).create(ProfileApi.class);
@@ -248,7 +387,6 @@ public class HomeFragment extends Fragment {
                     tvUserName.setText(name);
                 } else if (response.code() == 401) {
                     Log.w(TAG, "Unauthorized. Token may be invalid/expired.");
-                    // TODO: Điều hướng Login nếu cần
                 } else {
                     Log.w(TAG, "getUser failed: code=" + response.code());
                 }

@@ -125,8 +125,8 @@ public class DashboardActivity extends AppCompatActivity {
             fragment = new MapFragment();
             tag = "FAVORITES";
         } else if (id == R.id.nav_his) {
-            fragment = PlaceholderFragment.newInstance("Chat", "💬");
-            tag = "CHAT";
+            fragment = PlaceholderFragment.newInstance("History", "🚧");
+            tag = "HISTORY";
         } else if (id == R.id.nav_profile) {
             fragment = new ProfileFragment();
             tag = "PROFILE";

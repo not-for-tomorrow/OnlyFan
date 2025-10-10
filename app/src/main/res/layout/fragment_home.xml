@@ -99,14 +99,34 @@
                 android:src="@drawable/cat2" />
         </LinearLayout>
 
-        <!-- Category -->
+        <!-- Gợi ý tìm kiếm -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerSearchSuggest"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:nestedScrollingEnabled="false" />
+
+            <ProgressBar
+                android:id="@+id/progressSearch"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <!-- Banner -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bannerContainer"
             android:layout_width="match_parent"
             android:layout_height="240dp"
-            android:layout_marginTop="0dp"> <!-- Xóa khoảng trống bằng cách đặt marginTop là 0dp -->
+            android:layout_marginTop="0dp">
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/viewPagerBanner"
@@ -136,7 +156,7 @@
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:layout_marginTop="12dp"/> <!-- Giảm khoảng cách giữa Banner và Popular -->
+            android:layout_marginTop="12dp"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -163,6 +183,5 @@
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Xóa khoảng trống không cần thiết ở cuối -->
     </LinearLayout>
 </ScrollView>
