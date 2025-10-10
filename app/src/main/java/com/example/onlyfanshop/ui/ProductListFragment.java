@@ -1,4 +1,4 @@
-package com.example.onlyfanshop.ui.product;
+package com.example.onlyfanshop.ui;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +24,8 @@ import com.example.onlyfanshop.model.ProductDTO;
 import com.example.onlyfanshop.model.response.ApiResponse;
 import com.example.onlyfanshop.model.response.HomePageData;
 import com.example.onlyfanshop.ViewModel.ProductFilterViewModel;
+// IMPORTANT: import the detail activity from its package
+import com.example.onlyfanshop.ui.product.ProductDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +73,6 @@ public class ProductListFragment extends Fragment {
         productApi = ApiClient.getPrivateClient(requireContext()).create(ProductApi.class);
         filterVM = new ViewModelProvider(requireActivity()).get(ProductFilterViewModel.class);
 
-        // Quan sát thay đổi filter và reload
         filterVM.getKeyword().observe(getViewLifecycleOwner(), kw -> {
             currentKeyword = kw;
             fetchProducts();
@@ -80,14 +82,19 @@ public class ProductListFragment extends Fragment {
             fetchProducts();
         });
 
-        // Tải lần đầu
         fetchProducts();
     }
 
     private void setupRecycler() {
         productAdapter = new ProductAdapter(item -> {
-            // TODO: mở ProductDetailActivity nếu có
-            // startActivity(ProductDetailActivity.newIntent(requireContext(), item.getProductID()));
+            Integer pid = item.getProductID();
+            if (pid == null || pid <= 0) {
+                Toast.makeText(requireContext(), "Product ID không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            startActivity(ProductDetailActivity.newIntent(requireContext(), pid));
+            // Alternatively (no import needed):
+            // startActivity(com.example.onlyfanshop.ui.product.ProductDetailActivity.newIntent(requireContext(), pid));
         });
         recyclerProducts.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         recyclerProducts.setAdapter(productAdapter);
@@ -111,13 +118,13 @@ public class ProductListFragment extends Fragment {
         setLoading(true);
 
         Call<ApiResponse<HomePageData>> call = productApi.getHomePagePost(
-                1, // page
-                20, // size
+                1,
+                20,
                 "ProductID",
                 "DESC",
                 currentKeyword,
                 currentCategoryId,
-                null // brandId
+                null
         );
 
         call.enqueue(new Callback<ApiResponse<HomePageData>>() {
