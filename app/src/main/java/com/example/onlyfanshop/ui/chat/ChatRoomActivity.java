@@ -2,6 +2,7 @@ package com.example.onlyfanshop.ui.chat;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,10 +57,19 @@ public class ChatRoomActivity extends AppCompatActivity {
         String customerName = getIntent().getStringExtra("customerName");
         if (tvHeader != null && customerName != null) {
             tvHeader.setText(customerName);
+            Log.d("ChatRoomActivity", "Customer name from intent: " + customerName);
+        } else {
+            Log.w("ChatRoomActivity", "No customer name provided in intent");
         }
 
         selfUserId = FirebaseAuth.getInstance().getUid();
-        if (selfUserId == null) selfUserId = "me";
+        if (selfUserId == null) {
+            // For admin users who don't have Firebase UID, use admin_uid
+            selfUserId = "admin_uid";
+            Log.d("ChatRoomActivity", "No Firebase UID, using admin_uid as selfUserId");
+        } else {
+            Log.d("ChatRoomActivity", "Firebase UID: " + selfUserId);
+        }
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
@@ -68,78 +78,238 @@ public class ChatRoomActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         if (conversationId != null) {
+            Log.d("ChatRoomActivity", "Connecting to Firebase with conversationId: " + conversationId);
             messagesRef = FirebaseDatabase.getInstance()
                     .getReference("chats")
                     .child(conversationId)
                     .child("messages");
 
+            // Ensure conversation exists in conversations collection
+            ensureConversationExists();
+
             messagesRef.addChildEventListener(new ChildEventListener() {
                 @Override public void onChildAdded(@NonNull DataSnapshot snapshot, String previousChildName) {
+                    Log.d("ChatRoomActivity", "New message received: " + snapshot.getKey());
                     Message m = snapshot.getValue(Message.class);
                     if (m != null) {
                         messages.add(m);
                         adapter.notifyItemInserted(messages.size() - 1);
                         recyclerView.scrollToPosition(messages.size() - 1);
+                        Log.d("ChatRoomActivity", "Message added to UI: " + m.getText());
                     }
                 }
-                @Override public void onChildChanged(@NonNull DataSnapshot snapshot, String previousChildName) {}
-                @Override public void onChildRemoved(@NonNull DataSnapshot snapshot) {}
+                @Override public void onChildChanged(@NonNull DataSnapshot snapshot, String previousChildName) {
+                    Log.d("ChatRoomActivity", "Message updated: " + snapshot.getKey());
+                }
+                @Override public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                    Log.d("ChatRoomActivity", "Message removed: " + snapshot.getKey());
+                }
                 @Override public void onChildMoved(@NonNull DataSnapshot snapshot, String previousChildName) {}
-                @Override public void onCancelled(@NonNull DatabaseError error) {}
+                @Override public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e("ChatRoomActivity", "Firebase listener cancelled: " + error.getMessage());
+                }
             });
         } else {
-            loadMockMessages();
+            Log.w("ChatRoomActivity", "No conversationId provided, cannot load messages");
         }
-
-        // Fallback: if after a short delay there is still no message, seed mock so UI shows bottom aligned bubbles
-        recyclerView.postDelayed(() -> {
-            if (messages.isEmpty()) {
-                loadMockMessages();
-            }
-        }, 300);
 
         btnSend.setOnClickListener(v -> sendMessage());
     }
 
     private void sendMessage() {
         String text = edtMessage.getText().toString().trim();
-        if (TextUtils.isEmpty(text)) return;
-        String uid = selfUserId;
-        if (conversationId == null || messagesRef == null) {
-            // Offline/mock mode
-            Message local = new Message(java.util.UUID.randomUUID().toString(), "mock", uid, null, text, System.currentTimeMillis());
-            messages.add(local);
-            adapter.notifyItemInserted(messages.size() - 1);
-            recyclerView.scrollToPosition(messages.size() - 1);
-            edtMessage.setText("");
+        if (TextUtils.isEmpty(text)) {
+            Log.w("ChatRoomActivity", "Attempted to send empty message");
             return;
         }
+        
+        String uid = selfUserId;
+        if (conversationId == null || messagesRef == null) {
+            Log.e("ChatRoomActivity", "Cannot send message: conversationId or messagesRef is null");
+            return;
+        }
+        
+        // Get real username from JWT token
+        String realUsername = getUsernameFromToken();
+        Log.d("ChatRoomActivity", "Sending message: " + text + " from user: " + uid + " with username: " + realUsername);
+        
         String messageId = messagesRef.push().getKey();
         long now = System.currentTimeMillis();
-        Message message = new Message(messageId, conversationId, uid, null, text, now);
+        Message message = new Message(messageId, conversationId, uid, realUsername, text, now);
+        
         if (messageId != null) {
-            messagesRef.child(messageId).setValue(message);
-            // Also update conversation last message for the list screen
-            FirebaseDatabase.getInstance().getReference("conversations")
-                    .child(conversationId)
-                    .child("lastMessage").setValue(text);
-            FirebaseDatabase.getInstance().getReference("conversations")
-                    .child(conversationId)
-                    .child("lastTimestamp").setValue(now);
+            messagesRef.child(messageId).setValue(message)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("ChatRoomActivity", "Message sent successfully: " + messageId);
+                    // Update conversation with full data
+                    updateConversationData(text, now);
+                    // Sync message to MySQL database
+                    syncMessageToDatabase(message);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("ChatRoomActivity", "Failed to send message: " + e.getMessage());
+                });
+        } else {
+            Log.e("ChatRoomActivity", "Failed to generate message ID");
         }
+        
         edtMessage.setText("");
     }
 
-    private void loadMockMessages() {
-        long now = System.currentTimeMillis();
-        String me = selfUserId;
-        String other = "admin";
-        messages.clear();
-        messages.add(new Message("1", "mock", other, "Doctor", "Chào bạn, mình có thể giúp gì?", now - 5 * 60 * 1000));
-        messages.add(new Message("2", "mock", me, "Me", "Em bị đau đầu 3 ngày nay.", now - 4 * 60 * 1000));
-        messages.add(new Message("3", "mock", other, "Doctor", "Bạn nên nghỉ ngơi và uống nhiều nước.", now - 3 * 60 * 1000));
-        adapter.notifyDataSetChanged();
-        recyclerView.scrollToPosition(messages.size() - 1);
+    private String getUsernameFromToken() {
+        try {
+            // Get JWT token from SharedPreferences
+            android.content.SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+            String token = prefs.getString("jwt_token", null);
+            
+            if (token == null || token.isEmpty()) {
+                Log.w("ChatRoomActivity", "No JWT token found, using default username");
+                return "User";
+            }
+            
+            // Decode JWT token to get username
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) {
+                Log.w("ChatRoomActivity", "Invalid JWT token format");
+                return "User";
+            }
+            
+            // Decode payload (base64)
+            String payload = parts[1];
+            // Add padding if needed
+            while (payload.length() % 4 != 0) {
+                payload += "=";
+            }
+            
+            byte[] decodedBytes = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
+            String payloadJson = new String(decodedBytes);
+            
+            // Parse JSON to get username
+            org.json.JSONObject jsonObject = new org.json.JSONObject(payloadJson);
+            String username = jsonObject.optString("username", "User");
+            
+            Log.d("ChatRoomActivity", "Decoded username from JWT: " + username);
+            return username;
+            
+        } catch (Exception e) {
+            Log.e("ChatRoomActivity", "Error decoding JWT token: " + e.getMessage());
+            return "User";
+        }
+    }
+
+    private void updateConversationData(String lastMessage, long timestamp) {
+        if (conversationId == null) return;
+        
+        Log.d("ChatRoomActivity", "Updating conversation data: " + conversationId);
+        
+        // Extract customer and admin IDs from conversationId
+        String[] parts = conversationId.split("_");
+        String customerId = parts.length > 1 ? parts[1] : selfUserId;
+        String adminId = parts.length > 0 ? parts[0] : "admin_uid";
+        
+        // Get customer name from JWT token
+        String customerName = getUsernameFromToken();
+        Log.d("ChatRoomActivity", "Final customer name from JWT: " + customerName);
+        
+        // Create full conversation object
+        com.example.onlyfanshop.model.chat.Conversation conv = new com.example.onlyfanshop.model.chat.Conversation(
+                conversationId,
+                customerId,
+                adminId,
+                customerName, // Use real customer name
+                "Admin",
+                lastMessage,
+                timestamp
+        );
+        
+        // Save full conversation object
+        FirebaseDatabase.getInstance().getReference("conversations")
+                .child(conversationId)
+                .setValue(conv)
+                .addOnSuccessListener(aVoid -> Log.d("ChatRoomActivity", "Conversation updated successfully"))
+                .addOnFailureListener(e -> Log.e("ChatRoomActivity", "Failed to update conversation: " + e.getMessage()));
+    }
+
+    private void syncMessageToDatabase(Message message) {
+        // Sync message to MySQL database via backend API
+        Log.d("ChatRoomActivity", "Syncing message to database: " + message.getText());
+        
+        try {
+            // Get JWT token for authentication
+            android.content.SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+            String token = prefs.getString("jwt_token", null);
+            
+            if (token == null || token.isEmpty()) {
+                Log.w("ChatRoomActivity", "No JWT token found, cannot sync to database");
+                return;
+            }
+            
+            // Extract receiver ID (admin)
+            String[] parts = conversationId.split("_");
+            String receiverId = parts.length > 0 ? parts[0] : "admin_uid";
+            
+            // Call backend API to sync message
+            syncMessageToBackend(message.getSenderId(), receiverId, message.getText(), token);
+            
+        } catch (Exception e) {
+            Log.e("ChatRoomActivity", "Error syncing message to database: " + e.getMessage());
+        }
+    }
+    
+    private void syncMessageToBackend(String senderId, String receiverId, String message, String token) {
+        // TODO: Implement Retrofit API call
+        // POST /api/chat/sync-message
+        // Headers: Authorization: Bearer {token}
+        // Body: { senderId, receiverId, message }
+        
+        Log.d("ChatRoomActivity", "Calling backend API to sync message:");
+        Log.d("ChatRoomActivity", "  - senderId: " + senderId);
+        Log.d("ChatRoomActivity", "  - receiverId: " + receiverId);
+        Log.d("ChatRoomActivity", "  - message: " + message);
+        Log.d("ChatRoomActivity", "  - token: " + token.substring(0, Math.min(20, token.length())) + "...");
+        
+        // For now, just log the API call
+        // In production, implement actual Retrofit call here
+    }
+
+    private void ensureConversationExists() {
+        if (conversationId == null) return;
+        
+        Log.d("ChatRoomActivity", "Ensuring conversation exists: " + conversationId);
+        DatabaseReference conversationsRef = FirebaseDatabase.getInstance().getReference("conversations");
+        DatabaseReference convRef = conversationsRef.child(conversationId);
+        
+        convRef.get().addOnSuccessListener(snapshot -> {
+            if (!snapshot.exists()) {
+                Log.d("ChatRoomActivity", "Creating conversation: " + conversationId);
+                // Extract customer and admin IDs from conversationId
+                String[] parts = conversationId.split("_");
+                String customerId = parts.length > 1 ? parts[1] : selfUserId;
+                String adminId = parts.length > 0 ? parts[0] : "admin_uid";
+                
+                // Get customer name from JWT token
+                String customerName = getUsernameFromToken();
+                Log.d("ChatRoomActivity", "Final customer name from JWT: " + customerName);
+                
+                com.example.onlyfanshop.model.chat.Conversation conv = new com.example.onlyfanshop.model.chat.Conversation(
+                        conversationId,
+                        customerId,
+                        adminId,
+                        customerName, // Use real customer name
+                        "Admin",
+                        "Conversation started",
+                        System.currentTimeMillis()
+                );
+                
+                convRef.setValue(conv)
+                    .addOnSuccessListener(aVoid -> Log.d("ChatRoomActivity", "Conversation created successfully"))
+                    .addOnFailureListener(e -> Log.e("ChatRoomActivity", "Failed to create conversation: " + e.getMessage()));
+            } else {
+                Log.d("ChatRoomActivity", "Conversation already exists");
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("ChatRoomActivity", "Failed to check conversation existence: " + e.getMessage());
+        });
     }
 
     private static class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.VH> {
@@ -153,7 +323,12 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
         @Override public void onBindViewHolder(@NonNull VH h, int position) {
             Message m = data.get(position);
+            // Fix: Customer messages should be on the left (incoming), Admin messages on the right (outgoing)
             boolean isMine = m.getSenderId() != null && m.getSenderId().equals(selfUserId);
+            Log.d("MessagesAdapter", "Message from: " + m.getSenderId() + ", selfUserId: " + selfUserId + ", isMine: " + isMine);
+            
+            // For admin view: customer messages (incoming) on left, admin messages (outgoing) on right
+            // For customer view: customer messages (outgoing) on right, admin messages (incoming) on left
             h.containerIncoming.setVisibility(isMine ? View.GONE : View.VISIBLE);
             h.containerOutgoing.setVisibility(isMine ? View.VISIBLE : View.GONE);
             if (isMine) {
