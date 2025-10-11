@@ -41,6 +41,17 @@ public class Conversation {
     public String getAdminName() { return adminName; }
     public String getLastMessage() { return lastMessage; }
     public long getLastTimestamp() { return lastTimestamp; }
+    
+    // Setters
+    public void setId(String id) { this.id = id; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
+    public void setAdminId(String adminId) { this.adminId = adminId; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+    public void setAdminName(String adminName) { this.adminName = adminName; }
+    public void setLastMessage(String lastMessage) { this.lastMessage = lastMessage; }
+    public void setLastTimestamp(long lastTimestamp) { this.lastTimestamp = lastTimestamp; }
 }
+
+
 
 

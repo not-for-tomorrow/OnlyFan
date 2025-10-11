@@ -97,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
             if (user != null) intent.putExtra("user", user);
             startActivity(intent);
         });
+
+        // Update button text based on user role
+        updateChatButtonText(user);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -109,8 +112,41 @@ public class MainActivity extends AppCompatActivity {
         }
 
         btnOpenTestChat.setOnClickListener(v -> {
-            Intent i = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.ChatListActivity.class);
-            startActivity(i);
+            // Check user role and navigate accordingly
+            if (user != null && user.getRole() != null) {
+                String userRole = user.getRole();
+                if ("CUSTOMER".equals(userRole)) {
+                    // Customer: Go to ChatRoomActivity to chat with admin
+                    Log.d("MainActivity", "Customer accessing chat with admin");
+                    Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.ChatRoomActivity.class);
+                    
+                    // Create conversation ID between customer and admin
+                    String customerId = FirebaseAuth.getInstance().getUid();
+                    if (customerId == null) {
+                        customerId = "customer_" + user.getUserID();
+                    }
+                    String adminId = "admin_uid"; // This should match your admin UID in strings.xml
+                    String conversationId = customerId.compareTo(adminId) < 0 ? 
+                        customerId + "_" + adminId : adminId + "_" + customerId;
+                    
+                    intent.putExtra("conversationId", conversationId);
+                    intent.putExtra("customerName", "Admin");
+                    Log.d("MainActivity", "Opening chat room with conversationId: " + conversationId);
+                    startActivity(intent);
+                } else if ("ADMIN".equals(userRole)) {
+                    // Admin: Go to ChatListActivity to see all conversations
+                    Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.ChatListActivity.class);
+                    startActivity(intent);
+                } else {
+                    // Default fallback
+                    Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.ChatListActivity.class);
+                    startActivity(intent);
+                }
+            } else {
+                // No user info, default to ChatListActivity
+                Intent intent = new Intent(MainActivity.this, com.example.onlyfanshop.ui.chat.ChatListActivity.class);
+                startActivity(intent);
+            }
         });
     }
 
@@ -325,6 +361,21 @@ public class MainActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    private void updateChatButtonText(UserDTO user) {
+        if (user != null && user.getRole() != null) {
+            String userRole = user.getRole();
+            if ("CUSTOMER".equals(userRole)) {
+                btnOpenTestChat.setText("Chat with Admin");
+            } else if ("ADMIN".equals(userRole)) {
+                btnOpenTestChat.setText("Chat List");
+            } else {
+                btnOpenTestChat.setText("Open Test Chat");
+            }
+        } else {
+            btnOpenTestChat.setText("Open Test Chat");
+        }
     }
 
 }

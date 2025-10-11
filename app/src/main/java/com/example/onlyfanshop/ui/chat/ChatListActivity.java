@@ -2,6 +2,7 @@ package com.example.onlyfanshop.ui.chat;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +46,7 @@ public class ChatListActivity extends AppCompatActivity {
         edtSearch = findViewById(R.id.edtSearch);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ConversationAdapter(conversations, c -> {
+            Log.d("ChatListActivity", "Opening conversation: " + c.getId() + " with " + c.getCustomerName());
             Intent i = new Intent(this, ChatRoomActivity.class);
             i.putExtra("conversationId", c.getId());
             i.putExtra("customerName", c.getCustomerName());
@@ -62,43 +64,90 @@ public class ChatListActivity extends AppCompatActivity {
 
         currentUserId = FirebaseAuth.getInstance().getUid();
         if (currentUserId == null) {
-            // No login/Firebase yet -> show mock conversations
-            loadMockConversations();
-        } else {
-            conversationsRef = FirebaseDatabase.getInstance().getReference("conversations");
-            ensureConversationExistsWithAdmin();
-            conversationsRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    conversations.clear();
-                    for (DataSnapshot child : snapshot.getChildren()) {
-                        Conversation c = child.getValue(Conversation.class);
-                        if (c != null) {
-                            if (currentUserId.equals(c.getCustomerId()) || currentUserId.equals(c.getAdminId())) {
-                                conversations.add(c);
+            Log.w("ChatListActivity", "No Firebase user ID, using fallback for admin");
+            // For admin users who don't have Firebase UID, use a fallback
+            currentUserId = "admin_fallback";
+        }
+        
+        Log.d("ChatListActivity", "Loading conversations for user: " + currentUserId);
+        conversationsRef = FirebaseDatabase.getInstance().getReference("conversations");
+        ensureConversationExistsWithAdmin();
+        
+        conversationsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.d("ChatListActivity", "Conversations data changed, total children: " + snapshot.getChildrenCount());
+                conversations.clear();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    Log.d("ChatListActivity", "Raw Firebase data: " + child.getValue());
+                    Conversation c = child.getValue(Conversation.class);
+                    if (c != null) {
+                        Log.d("ChatListActivity", "Parsed conversation - ID: " + c.getId() + 
+                              ", CustomerId: " + c.getCustomerId() + 
+                              ", AdminId: " + c.getAdminId() + 
+                              ", CustomerName: " + c.getCustomerName() + 
+                              ", LastMessage: " + c.getLastMessage());
+                        
+                        // If customer name is null or "Customer", try to get real name
+                        if (c.getCustomerName() == null || c.getCustomerName().equals("Customer")) {
+                            // Try to get customer name from Firebase user data
+                            String customerId = c.getCustomerId();
+                            if (customerId != null && !customerId.equals("admin_uid")) {
+                                // This is a customer, try to get their real name
+                                // For now, use a more descriptive name
+                                c.setCustomerName("Customer " + customerId);
+                                Log.d("ChatListActivity", "Updated customer name to: " + c.getCustomerName());
                             }
                         }
+                        
+                        // Admin can see all conversations, customers can only see their own
+                        if (currentUserId.equals("admin_fallback") || 
+                            currentUserId.equals(c.getCustomerId()) || 
+                            currentUserId.equals(c.getAdminId())) {
+                            conversations.add(c);
+                            Log.d("ChatListActivity", "Added conversation: " + c.getId() + " with " + c.getCustomerName());
+                        }
+                    } else {
+                        Log.w("ChatListActivity", "Failed to parse conversation from Firebase data");
                     }
-                    Collections.sort(conversations, Comparator.comparingLong(Conversation::getLastTimestamp).reversed());
-                    adapter.notifyDataSetChanged();
                 }
+                Collections.sort(conversations, Comparator.comparingLong(Conversation::getLastTimestamp).reversed());
+                adapter.notifyDataSetChanged();
+                Log.d("ChatListActivity", "Updated conversations list, total: " + conversations.size());
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                }
-            });
-        }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ChatListActivity", "Firebase listener cancelled: " + error.getMessage());
+            }
+        });
     }
 
     private void ensureConversationExistsWithAdmin() {
-        if (currentUserId == null) return;
+        if (currentUserId == null) {
+            Log.w("ChatListActivity", "Cannot ensure admin conversation: currentUserId is null");
+            return;
+        }
+        
+        // Don't create conversations for admin fallback - they should see existing ones
+        if (currentUserId.equals("admin_fallback")) {
+            Log.d("ChatListActivity", "Admin fallback user - not creating new conversations");
+            return;
+        }
+        
         final String adminUid = getString(R.string.admin_uid); // configure in strings.xml
-        if (adminUid == null || adminUid.isEmpty()) return;
+        if (adminUid == null || adminUid.isEmpty()) {
+            Log.w("ChatListActivity", "Admin UID not configured in strings.xml");
+            return;
+        }
+        
         String conversationId = buildConversationId(currentUserId, adminUid);
+        Log.d("ChatListActivity", "Ensuring conversation exists: " + conversationId);
 
         DatabaseReference convRef = conversationsRef.child(conversationId);
         convRef.get().addOnSuccessListener(snapshot -> {
             if (!snapshot.exists()) {
+                Log.d("ChatListActivity", "Creating new conversation with admin");
                 com.example.onlyfanshop.model.chat.Conversation conv = new com.example.onlyfanshop.model.chat.Conversation(
                         conversationId,
                         currentUserId,
@@ -108,41 +157,17 @@ public class ChatListActivity extends AppCompatActivity {
                         "Hãy bắt đầu trò chuyện với chúng tôi",
                         System.currentTimeMillis()
                 );
-                convRef.setValue(conv);
+                convRef.setValue(conv)
+                    .addOnSuccessListener(aVoid -> Log.d("ChatListActivity", "Conversation created successfully"))
+                    .addOnFailureListener(e -> Log.e("ChatListActivity", "Failed to create conversation: " + e.getMessage()));
+            } else {
+                Log.d("ChatListActivity", "Conversation already exists");
             }
+        }).addOnFailureListener(e -> {
+            Log.e("ChatListActivity", "Failed to check conversation existence: " + e.getMessage());
         });
     }
 
-    private void loadMockConversations() {
-        conversations.clear();
-        long now = System.currentTimeMillis();
-        conversations.add(new Conversation(
-                UUID.randomUUID().toString(),
-                "u_me", "u_doc1",
-                null,
-                "Dr. Denton Cooley",
-                "Hello, how can I help you?",
-                now - 2 * 60 * 1000
-        ));
-        conversations.add(new Conversation(
-                UUID.randomUUID().toString(),
-                "u_me", "u_doc2",
-                null,
-                "Dr. Valentin Fuster",
-                "Please take rest and drink water.",
-                now - 60 * 60 * 1000
-        ));
-        conversations.add(new Conversation(
-                UUID.randomUUID().toString(),
-                "u_me", "u_doc3",
-                null,
-                "Dr. Sarah Jarvis",
-                "We can schedule a check-up tomorrow.",
-                now - 24 * 60 * 60 * 1000
-        ));
-        Collections.sort(conversations, Comparator.comparingLong(Conversation::getLastTimestamp).reversed());
-        adapter.notifyDataSetChanged();
-    }
 
     private static String buildConversationId(@NonNull String a, @NonNull String b) {
         // Deterministic pair id to avoid duplicates
